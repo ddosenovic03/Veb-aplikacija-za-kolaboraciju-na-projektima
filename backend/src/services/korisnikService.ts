@@ -1,5 +1,9 @@
 import { db } from "../config/db";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+
+// REGISTRACIJA KORISNIKA
 
 type RegistracijaPodaci = {
   ime: string;
@@ -30,6 +34,45 @@ export const registracija = async (podaci: RegistracijaPodaci) => {
     korisnicko_ime,
     email
   };
+
+};
+
+// LOGIN KORISNIKA
+export const login = async (email: string, lozinka: string) => {
+    if (!email || !lozinka) {
+        throw new Error("Email i lozinka su obavezni");
+    }
+
+    const [rows]: any = await db.query("SELECT * FROM Korisnik WHERE email = ?", [email]);
+
+    const korisnik = rows[0];
+
+    if (!korisnik) {
+        throw new Error("Neispravan email ili lozinka");
+    }
+
+    const validnaLozinka = await bcrypt.compare(lozinka, korisnik.lozinka_hash);
+    
+    if (!validnaLozinka) {
+        throw new Error("Neispravan email ili lozinka");
+    }
+
+    const token = jwt.sign(
+        { id: korisnik.id, email: korisnik.email },
+        process.env.JWT_SECRET!,
+        { expiresIn: "1h" }
+    );
+
+    return {
+        token,
+        korisnik: {
+            id: korisnik.id,
+            ime: korisnik.ime,
+            prezime: korisnik.prezime,
+            korisnicko_ime: korisnik.korisnicko_ime,
+            email: korisnik.email
+        }
+    };
 
 };
 
