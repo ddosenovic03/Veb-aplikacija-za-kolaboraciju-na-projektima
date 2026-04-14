@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { db } from "./config/db";
 
 dotenv.config();
 
@@ -12,6 +13,16 @@ app.use(express.json());
 
 app.get("/", (_req, res) => {
   res.send("Pozdrav!");
+});
+
+app.get("/api/test-db", async (_req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM Korisnik");
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Greška pri testiranju baze podataka" });
+  }
 });
 
 app.listen(PORT, "127.0.0.1", () => {
