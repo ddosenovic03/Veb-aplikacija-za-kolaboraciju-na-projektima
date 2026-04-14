@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { db } from "./config/db";
 
+import korisnikRoutes from "./routes/korisnikRoutes";
+
 dotenv.config();
 
 const app = express();
@@ -28,3 +30,6 @@ app.get("/api/test-db", async (_req, res) => {
 app.listen(PORT, "127.0.0.1", () => {
   console.log(`Server pokrenut na http://localhost:${PORT}`);
 });
+
+
+app.use("/api/korisnici", korisnikRoutes);
