@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { db } from "./config/db";
+import { autentifikacija } from "./middlewares/authMiddleware";
 
 import korisnikRoutes from "./routes/korisnikRoutes";
 
@@ -31,5 +32,8 @@ app.listen(PORT, "127.0.0.1", () => {
   console.log(`Server pokrenut na http://localhost:${PORT}`);
 });
 
-
 app.use("/api/korisnici", korisnikRoutes);
+
+app.get("/api/zasticeni", autentifikacija, (req, res) => {
+  res.json({ poruka: "Pristup dozvoljen!", korisnik: req.korisnik });
+});
