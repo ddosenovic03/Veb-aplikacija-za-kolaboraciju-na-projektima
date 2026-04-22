@@ -115,3 +115,39 @@ export const pozoviKorisnikaNaProjekat=  async (projekatId: number, korisnikId: 
         status: 'pozvan'
     };
 };
+
+export const odgovoriNaPoziv = async (projekatId: number, korisnikId: number, status: "prihvacen" | "odbijen") => {
+    
+    const [clanstva] = await db.query<RowDataPacket[]>(
+        `
+        SELECT * FROM ClanstvoNaProjektu
+        WHERE projekat_id = ? AND korisnik_id = ?
+        `,
+        [projekatId, korisnikId]
+    );
+
+    const clanstvo = clanstva[0];
+
+    if (!clanstvo) {
+        throw new Error("Poziv za ovaj projekat ne postoji.");
+    }
+
+    if (clanstvo.status !== 'pozvan') {
+        throw new Error("Na ovaj poziv je već odgovoreno.");
+    }
+
+    await db.query(
+        `
+        UPDATE ClanstvoNaProjektu
+        SET status = ?
+        WHERE projekat_id = ? AND korisnik_id = ?
+        `,
+        [status, projekatId, korisnikId]
+    );
+
+    return {
+        projekat_id: projekatId,
+        korisnik_id: korisnikId,
+        status
+    };
+};
