@@ -5,6 +5,7 @@ import { db } from "./config/db";
 import { autentifikacija } from "./middlewares/authMiddleware";
 
 import korisnikRoutes from "./routes/korisnikRoutes";
+import projekatRoutes from "./routes/projekatRoutes";
 
 dotenv.config();
 
@@ -37,3 +38,5 @@ app.use("/api/korisnici", korisnikRoutes);
 app.get("/api/zasticeni", autentifikacija, (req, res) => {
   res.json({ poruka: "Pristup dozvoljen!", korisnik: req.korisnik });
 });
+
+app.use("/api/projekti", projekatRoutes);
