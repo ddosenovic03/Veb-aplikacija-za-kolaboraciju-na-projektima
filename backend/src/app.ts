@@ -6,6 +6,7 @@ import { autentifikacija } from "./middlewares/authMiddleware";
 
 import korisnikRoutes from "./routes/korisnikRoutes";
 import projekatRoutes from "./routes/projekatRoutes";
+import posaoRoutes from "./routes/posaoRoutes";
 
 dotenv.config();
 
@@ -40,3 +41,5 @@ app.get("/api/zasticeni", autentifikacija, (req, res) => {
 });
 
 app.use("/api/projekti", projekatRoutes);
+
+app.use("/api/poslovi", posaoRoutes);
