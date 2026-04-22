@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
-import { kreirajProjekat } from '../services/projekatService';
-import { pozoviKorisnikaNaProjekat } from '../services/projekatService';
-import { odgovoriNaPoziv } from '../services/projekatService';
+import { 
+    kreirajProjekat,
+    pozoviKorisnikaNaProjekat,
+    odgovoriNaPoziv,
+    kreirajPosao
+} from '../services/projekatService';
 
 export const kreiranjeProjekta = async (req: Request, res: Response) => {
     try {
@@ -76,5 +79,30 @@ export const odbijanjePoziva = async (req: Request, res: Response) => {
     } catch (greska: any) {
         console.error(greska);
         return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom odbijanja poziva." }); 
+    }
+};
+
+export const kreiranjePosla = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+        const { naziv, opis, rok } = req.body;
+
+        if (!req.korisnik) {
+            return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
+        }
+
+        const posao = await kreirajPosao(
+            projekatId,
+            req.korisnik.id,
+            naziv,
+            opis,
+            rok
+        );
+
+        return res.status(201).json({ poruka: "Posao uspešno kreiran.", posao });
+    } catch (greska: any) {
+        console.error(greska);
+        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom kreiranja posla." }); 
     }
 };

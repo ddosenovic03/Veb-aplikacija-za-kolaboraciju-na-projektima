@@ -151,3 +151,39 @@ export const odgovoriNaPoziv = async (projekatId: number, korisnikId: number, st
         status
     };
 };
+
+export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv: string, opis: string | undefined, rok: string) => {
+
+    if (!naziv || !rok) {
+        throw new Error("Naziv posla i rok su obavezni.");
+    }
+
+    const [clanstva] = await db.query<RowDataPacket[]>(
+        `
+        SELECT * FROM ClanstvoNaProjektu
+        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
+        `,
+        [projekatId, korisnikId]
+    );
+
+    if (clanstva.length === 0) {
+        throw new Error("Samo prihvaćeni članovi mogu da kreiraju posao.");
+    }
+
+    const [rezultat] = await db.query<ResultSetHeader>(
+        `
+        INSERT INTO Posao (naziv, opis, rok, projekat_id, kreator_id)
+        VALUES (?, ?, ?, ?, ?)
+        `,
+        [naziv, opis || null, rok, projekatId, korisnikId]
+    );
+
+    return  {
+        id: rezultat.insertId,
+        naziv,
+        opis: opis || null,
+        rok,
+        projekat_id: projekatId,
+        kreator_id: korisnikId
+    };
+};
