@@ -57,3 +57,38 @@ export const prijavaNaPosao = async (posaoId: number, korisnikId: number, predlo
         procenat: 0
     }
 };
+
+export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number, procenat: number) => {
+
+    if (procenat < 0 || procenat > 100) {
+        throw new Error("Procenat mora biti između 0 i 100.");
+    }
+
+    const [angazmani] = await db.query<RowDataPacket[]>(
+        `
+        SELECT * FROM AngazmanNaPoslu
+        WHERE korisnik_id = ? AND posao_id = ?
+        `,
+        [korisnikId, posaoId]
+    );
+
+    if (angazmani.length === 0) {
+        throw new Error("Korisnik nije prijavljen na ovaj posao.");
+    }
+
+    await db.query(
+        `
+        UPDATE AngazmanNaPoslu
+        SET procenat = ?
+        WHERE korisnik_id = ? AND posao_id = ?
+        `,
+        [procenat, korisnikId, posaoId]
+    );
+
+    return {
+        posaoId: posaoId,
+        korisnikId: korisnikId,
+        procenat: procenat,
+        status: procenat === 0 ? "prijavljen" : procenat === 100 ? "zavrsen" : "u toku"
+    }
+};
