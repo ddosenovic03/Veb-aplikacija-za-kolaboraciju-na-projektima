@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { dodajKomentar } from '../services/komentarService';
+import { dodajKomentar, dohvatiKomentareZaPosao } from '../services/komentarService';
 
 export const dodavanjeKomentara = async (req: Request, res: Response) => {
 
@@ -19,5 +19,23 @@ export const dodavanjeKomentara = async (req: Request, res: Response) => {
     } catch (greska: any) {
         console.error(greska);
         return res.status(500).json({ poruka: greska.message || "Došlo je do greške prilikom dodavanja komentara." });
+    }
+};
+
+export const dohvatiKomentare = async (req: Request, res: Response) => {
+
+    try {
+        const posaoId = Number(req.params.posaoId);
+
+        if (!req.korisnik) {
+            return res.status(401).json({ error: "Korisnik nije autorizovan" });
+        }
+
+        const komentari = await dohvatiKomentareZaPosao(posaoId, req.korisnik.id);
+
+        return res.status(200).json({ komentari });
+    } catch (greska: any) {
+        console.error(greska);
+        return res.status(500).json({ poruka: greska.message || "Došlo je do greške prilikom dohvaćanja komentara." });
     }
 };
