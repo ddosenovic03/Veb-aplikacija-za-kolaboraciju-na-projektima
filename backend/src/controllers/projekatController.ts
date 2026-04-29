@@ -3,7 +3,8 @@ import {
     kreirajProjekat,
     pozoviKorisnikaNaProjekat,
     odgovoriNaPoziv,
-    kreirajPosao
+    kreirajPosao,
+    prikaziPosloveZaProjekat
 } from '../services/projekatService';
 
 export const kreiranjeProjekta = async (req: Request, res: Response) => {
@@ -104,5 +105,23 @@ export const kreiranjePosla = async (req: Request, res: Response) => {
     } catch (greska: any) {
         console.error(greska);
         return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom kreiranja posla." }); 
+    }
+};
+
+export const prikazPoslovaZaProjekat = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+
+        if (!req.korisnik) {
+            return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
+        }
+
+        const poslovi = await prikaziPosloveZaProjekat(projekatId, req.korisnik.id);
+
+        return res.status(200).json({ poslovi });
+    } catch (greska: any) {
+        console.error(greska);
+        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikaza poslova za projekat." }); 
     }
 };

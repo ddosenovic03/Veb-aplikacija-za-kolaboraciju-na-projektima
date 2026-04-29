@@ -187,3 +187,69 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
         kreator_id: korisnikId
     };
 };
+
+export const prikaziPosloveZaProjekat = async (projekatId: Number, korisnikId: number) => {
+
+    const [clanstva] = await db.query<RowDataPacket[]>(
+        `
+        SELECT * FROM ClanstvoNaProjektu
+        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
+        `,
+        [projekatId, korisnikId]
+    );
+
+    if (clanstva.length === 0) {
+        throw new Error("Samo prihvaćeni članovi mogu da vide poslove.");
+    }
+
+    const [poslovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            p.kreator_id,
+            k.ime AS kreator_ime,
+            k.prezime AS kreator_prezime,
+            k.korisnicko_ime AS kreator_korisnicko_ime,
+            COUNT (a.id) AS broj_angazovanih,
+            COALESCE(ROUND(AVG(a.procenat), 2), 0) AS procenat_izvrsenosti
+        FROM Posao p
+        JOIN Korisnik k ON p.kreator_id = k.id
+        LEFT JOIN AngazmanNaPoslu a ON p.id = a.posao_id
+        WHERE p.projekat_id = ?
+        GROUP BY
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            p.kreator_id,
+            k.ime,
+            k.prezime,
+            k.korisnicko_ime
+        ORDER BY p.datum_kreiranja DESC
+        `,
+        [projekatId]
+    );
+
+    return poslovi.map((posao: any) => {
+
+        const procenat = Number(posao.procenat_izvrsenosti);
+
+        return {
+            // ...posao znaci da se ukljuce svi ostali atributi posla i na to dodajemo status
+            ...posao,
+            status:
+                procenat === 0
+                    ? "nije započet"
+                    : procenat === 100
+                    ? "završen"
+                    : "u toku"
+        }
+    });
+};
