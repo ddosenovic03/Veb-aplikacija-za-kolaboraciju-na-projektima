@@ -237,12 +237,12 @@ export const prikaziPosloveZaProjekat = async (projekatId: Number, korisnikId: n
         [projekatId]
     );
 
+    // Koristimo .map() da dodamo status svakom posao objektu na osnovu procenta izvršenosti
     return poslovi.map((posao: any) => {
 
         const procenat = Number(posao.procenat_izvrsenosti);
 
         return {
-            // ...posao znaci da se ukljuce svi ostali atributi posla i na to dodajemo status
             ...posao,
             status:
                 procenat === 0
@@ -250,6 +250,51 @@ export const prikaziPosloveZaProjekat = async (projekatId: Number, korisnikId: n
                     : procenat === 100
                     ? "završen"
                     : "u toku"
+        }
+    });
+};
+
+export const prikaziMojeProjekte = async (korisnikId: number) => {
+    const [projekti] = await db.query<RowDataPacket[]>(
+        `
+        SELECT 
+            p.id, 
+            p.naziv, 
+            p.opis, 
+            p.datum_kreiranja, 
+            p.vlasnik_id, 
+            COUNT(DISTINCT c2.korisnik_id) AS broj_clanova,
+            COUNT(DISTINCT po.id) AS broj_poslova,
+            COALESCE(ROUND(AVG(procenti_poslova.procenat_posla), 2), 0) AS procenat_projekta
+        FROM Projekat p
+        JOIN ClanstvoNaProjektu c ON c.projekat_id = p.id
+        LEFT JOIN ClanstvoNaProjektu c2 ON c2.projekat_id = p.id AND c2.status = 'prihvacen'
+        LEFT JOIN Posao po ON po.projekat_id = p.id
+        LEFT JOIN (
+            SELECT
+                posao_id,
+                AVG(procenat) AS procenat_posla
+            FROM AngazmanNaPoslu
+            GROUP BY posao_id
+        ) procenti_poslova ON procenti_poslova.posao_id = po.id
+        WHERE c.korisnik_id = ? AND c.status = 'prihvacen'
+        GROUP BY
+            p.id,
+            p.naziv,
+            p.opis,
+            p.datum_kreiranja,
+            p.vlasnik_id
+        ORDER BY p.datum_kreiranja DESC 
+        `,
+        [korisnikId]
+    );
+
+    return projekti.map((projekat: any) => {
+        const procenat = Number(projekat.procenat_projekta);
+
+        return {
+            ...projekat,
+            status: procenat === 0 ? "nije započet" : procenat === 100 ? "završen" : "u toku"
         }
     });
 };
