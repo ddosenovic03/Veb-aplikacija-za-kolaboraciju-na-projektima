@@ -349,3 +349,44 @@ export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: numb
         }
     };
 };
+
+export const dobaviPoziveKorisnikaZaProjekat = async (korisnikId: number) => {
+    
+    const [pozivi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            c.id as clanstvo_id,
+            c.status,
+            p.id as projekat_id,
+            p.naziv,
+            p.opis,
+            p.datum_kreiranja,
+            v.id as vlasnik_id,
+            v.ime as vlasnik_ime,
+            v.prezime as vlasnik_prezime,
+            v.korisnicko_ime as vlasnik_korisnicko_ime
+        FROM ClanstvoNaProjektu c
+        JOIN Projekat p ON c.projekat_id = p.id
+        JOIN Korisnik v ON p.vlasnik_id = v.id
+        WHERE c.korisnik_id = ? AND c.status = 'pozvan'
+        ORDER BY p.datum_kreiranja DESC
+        `, [korisnikId]
+    );
+
+    return pozivi.map((poziv: any) => ({
+        clanstvo_id: poziv.clanstvo_id,
+        status: poziv.status,
+        projekat: {
+            id: poziv.projekat_id,
+            naziv: poziv.naziv,
+            opis: poziv.opis,
+            datum_kreiranja: poziv.datum_kreiranja,
+        },
+        vlasnik: {
+            id: poziv.vlasnik_id,
+            ime: poziv.vlasnik_ime,
+            prezime: poziv.vlasnik_prezime,
+            korisnicko_ime: poziv.vlasnik_korisnicko_ime
+        }
+    }));
+};

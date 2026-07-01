@@ -8,13 +8,15 @@ import {
     kreiranjePosla,
     dobavljanjePoslovaZaProjekatController,
     dobavljanjeMojihProjekataController,
-    dobavljanjeDetaljaProjektaController
+    dobavljanjeDetaljaProjektaController,
+    dobavljanjePozivaKorisnikaZaProjekatController
 } from '../controllers/projekatController';
 
 const router = Router();
 
 router.post("/", autentifikacija, kreiranjeProjekta);
 router.get("/moji", autentifikacija, dobavljanjeMojihProjekataController);
+router.get("/pozivi", autentifikacija, dobavljanjePozivaKorisnikaZaProjekatController);
 router.get("/:projekatId", autentifikacija, dobavljanjeDetaljaProjektaController);
 router.post("/:projekatId/pozovi", autentifikacija, pozivanjeKorisnikaNaProjekatController);
 router.patch("/:projekatId/prihvati", autentifikacija, prihvatanjePozivaNaProjekatController);
