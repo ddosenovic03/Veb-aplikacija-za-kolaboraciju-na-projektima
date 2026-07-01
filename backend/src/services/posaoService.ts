@@ -1,5 +1,6 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { provjeriClanstvoNaProjektu } from "../utils/authorization";
 
 export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, predlozeniRok?: string) => {
 
@@ -17,17 +18,7 @@ export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, pred
         throw new Error("Posao nije pronađen");
     }
 
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE korisnik_id = ? AND projekat_id = ? AND status = 'prihvacen'
-        `,
-        [korisnikId, posao.projekat_id]
-    );
-
-    if (clanstva.length === 0) {
-        throw new Error("Korisnik nije član projekta.");
-    }
+    await provjeriClanstvoNaProjektu(korisnikId, posao.projekatId);
 
     const [postojeciAngazmani] = await db.query<RowDataPacket[]>(
         `
@@ -134,17 +125,7 @@ export const prikaziDetaljePosla = async (posaoId: number, korisnikId: number) =
         throw new Error("Posao nije pronađen");
     }
 
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE korisnik_id = ? AND projekat_id = ? AND status = 'prihvacen'
-        `,
-        [korisnikId, posao.projekat_id]
-    );
-
-    if (clanstva.length === 0) {
-        throw new Error("Korisnik nije član projekta.");
-    }
+    await provjeriClanstvoNaProjektu(korisnikId, posao.projekatId);
 
     const [angazovani] = await db.query<RowDataPacket[]>(
         `

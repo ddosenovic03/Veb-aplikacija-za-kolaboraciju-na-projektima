@@ -11,14 +11,14 @@ export const registracijaKorisnikaController = async (req: Request, res: Respons
             poruka : "Korisnik uspješno registrovan",
             korisnik
         });
-    } catch (greska: any) {
-        console.error(greska);
+    } catch (error: any) {
+        console.error(error);
         
-        if (greska.code === "ER_DUP_ENTRY") {
-            return res.status(400).json({ error: "Korisničko ime ili email već postoji" });
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(400).json({ greska: "Korisničko ime ili email već postoji" });
         } 
         
-        return res.status(400).json({ poruka: greska.message || "Greška pri registraciji korisnika" });
+        return res.status(400).json({ greska: error.message || "Greška pri registraciji korisnika" });
     }
 
 };
@@ -29,8 +29,8 @@ export const prijavaKorisnikaController = async (req: Request, res: Response) =>
         const { email, lozinka } = req.body;
         const rezultat = await prijaviKorisnika(email, lozinka);
         res.json(rezultat);
-    } catch (greska: any) {
-        console.error(greska);
-        res.status(400).json({ poruka: greska.message || "Greška pri prijavi korisnika" });
+    } catch (error: any) {
+        console.error(error);
+        res.status(400).json({ greska: error.message || "Greška pri prijavi korisnika" });
     }
 };

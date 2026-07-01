@@ -24,9 +24,9 @@ export const kreiranjeProjekta = async (req: Request, res: Response) => {
         });
 
         return res.status(201).json({ poruka : "Projekat uspešno kreiran.", projekat });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom kreiranja projekta." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom kreiranja projekta." });
     }
 };
 
@@ -42,9 +42,9 @@ export const pozivanjeKorisnikaNaProjekatController = async (req: Request, res: 
         const rezultat = await pozoviKorisnikaNaProjekat(projekatId, req.korisnik.id, email);
 
         return res.status(201).json({ poruka: "Korisnik uspešno pozvan na projekat.", rezultat });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom pozivanja korisnika na projekat." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom pozivanja korisnika na projekat." });
     }
 };
 
@@ -60,9 +60,9 @@ export const prihvatanjePozivaNaProjekatController = async (req: Request, res: R
         const rezultat = await odgovoriNaPozivZaProjekat(projekatId, req.korisnik.id, "prihvacen");
 
         return res.status(200).json({ poruka: "Poziv prihvaćen.", clanstvo: rezultat });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prihvatanja poziva." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prihvatanja poziva." });
     }
 };
 
@@ -79,9 +79,9 @@ export const odbijanjePozivaNaProjekatController = async (req: Request, res: Res
 
         return res.status(200).json({ poruka: "Poziv odbijen.", clanstvo: rezultat });
 
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom odbijanja poziva." }); 
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom odbijanja poziva." }); 
     }
 };
 
@@ -104,9 +104,9 @@ export const kreiranjePosla = async (req: Request, res: Response) => {
         );
 
         return res.status(201).json({ poruka: "Posao uspešno kreiran.", posao });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom kreiranja posla." }); 
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom kreiranja posla." }); 
     }
 };
 
@@ -122,9 +122,9 @@ export const dobavljanjePoslovaZaProjekatController = async (req: Request, res: 
         const poslovi = await dobaviPosloveZaProjekat(projekatId, req.korisnik.id);
 
         return res.status(200).json({ poslovi });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikaza poslova za projekat." }); 
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prikaza poslova za projekat." }); 
     }
 };
 
@@ -137,9 +137,9 @@ export const dobavljanjeMojihProjekataController = async (req: Request, res: Res
         const projekti = await dobaviMojeProjekte(req.korisnik.id);
 
         return res.status(200).json({ projekti });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikaza mojih projekata." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prikaza mojih projekata." });
     }
 };
 
@@ -154,8 +154,8 @@ export const dobavljanjeDetaljaProjektaController = async (req: Request, res: Re
         const projekat = await dobaviDetaljeProjekta(projekatId, req.korisnik.id);
 
         return res.status(200).json({ projekat });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikaza detalja projekta." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prikaza detalja projekta." });
     }
 };

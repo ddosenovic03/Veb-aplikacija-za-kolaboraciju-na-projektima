@@ -1,5 +1,6 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { provjeriClanstvoNaProjektu } from "../utils/authorization";
 
 type KreiranjeProjektaPodaci = {
     naziv: string;
@@ -158,17 +159,7 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
         throw new Error("Naziv posla i rok su obavezni.");
     }
 
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
-        `,
-        [projekatId, korisnikId]
-    );
-
-    if (clanstva.length === 0) {
-        throw new Error("Samo prihvaćeni članovi mogu da kreiraju posao.");
-    }
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
 
     const [rezultat] = await db.query<ResultSetHeader>(
         `
@@ -188,19 +179,9 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
     };
 };
 
-export const dobaviPosloveZaProjekat = async (projekatId: Number, korisnikId: number) => {
+export const dobaviPosloveZaProjekat = async (projekatId: number, korisnikId: number) => {
 
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
-        `,
-        [projekatId, korisnikId]
-    );
-
-    if (clanstva.length === 0) {
-        throw new Error("Samo prihvaćeni članovi mogu da vide poslove.");
-    }
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
 
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
@@ -302,17 +283,7 @@ export const dobaviMojeProjekte = async (korisnikId: number) => {
 
 export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: number) => {
     
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
-        `,
-        [projekatId, korisnikId]
-    );
-
-    if (clanstva.length === 0) {
-        throw new Error("Samo prihvaćeni članovi mogu da vide detalje projekta.");
-    }
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
 
     const [projekti] = await db.query<RowDataPacket[]>(
         `

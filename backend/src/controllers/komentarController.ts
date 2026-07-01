@@ -16,9 +16,8 @@ export const dodavanjeKomentaraController = async (req: Request, res: Response) 
 
         return res.status(201).json({ poruka: "Komentar uspešno dodat.", komentar });
 
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(500).json({ poruka: greska.message || "Došlo je do greške prilikom dodavanja komentara." });
+    } catch (error: any) {
+        return res.status(500).json({ greska: error.message });
     }
 };
 
@@ -28,14 +27,14 @@ export const dobavljanjeKomentaraZaPosaoController = async (req: Request, res: R
         const posaoId = Number(req.params.posaoId);
 
         if (!req.korisnik) {
-            return res.status(401).json({ error: "Korisnik nije autorizovan" });
+            return res.status(401).json({ greska: "Korisnik nije autorizovan" });
         }
 
         const komentari = await dobaviKomentareZaPosao(posaoId, req.korisnik.id);
 
         return res.status(200).json({ komentari });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(500).json({ poruka: greska.message || "Došlo je do greške prilikom dohvaćanja komentara." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(500).json({ greska: error.message });
     }
 };

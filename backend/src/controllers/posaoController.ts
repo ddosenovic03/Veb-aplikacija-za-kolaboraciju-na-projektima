@@ -18,9 +18,9 @@ export const prijavaNaPosaoController = async (req: Request, res: Response) => {
         const angazman = await prijaviSeNaPosao(posaoId, req.korisnik.id, predlozeniRok);
 
         return res.status(201).json({ poruka: "Korisnik je uspešno prijavljen na posao.", angazman });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prijave na posao." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prijave na posao." });
     }
 }; 
 
@@ -37,9 +37,9 @@ export const azuriranjeProcentaPoslaController = async (req: Request, res: Respo
         const rezultat = await azurirajProcenatPosla(posaoId, req.korisnik.id, Number(procenat));
 
         return res.status(200).json({ poruka: "Procenat posla je uspešno ažuriran.", angazman: rezultat });
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom ažuriranja procenta posla." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom ažuriranja procenta posla." });
     }
 };
 
@@ -55,8 +55,8 @@ export const prikazDetaljaPoslaController = async (req: Request, res: Response) 
         const rezultat = await prikaziDetaljePosla(posaoId, req.korisnik.id);
 
         return res.status(200).json(rezultat);
-    } catch (greska: any) {
-        console.error(greska);
-        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikazivanja detalja posla." });
+    } catch (error: any) {
+        console.error(error);
+        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prikazivanja detalja posla." });
     }
 };

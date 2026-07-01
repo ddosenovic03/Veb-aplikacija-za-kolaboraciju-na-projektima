@@ -1,18 +1,15 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { provjeriClanstvoNaProjektu } from "../utils/authorization";
 
-export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj: string, vidljivost: "javni" | "privatni") => {
+export const dodajKomentar = async (posaoId: Number, korisnikId: Number, sadrzaj: string, vidljivost: "javni" | "privatni") => {
 
     if (!sadrzaj) {
         throw new Error("Sadržaj komentara je obavezan.");
     }
 
     const [poslovi] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM Posao
-        WHERE id = ?
-        `,
-        [posaoId]
+        "SELECT * FROM Posao WHERE id = ?", [posaoId]
     )
 
     const posao = poslovi[0];
@@ -20,18 +17,8 @@ export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj
     if (!posao) {
         throw new Error("Posao nije pronađen.");
     }
-
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
-        `,
-        [posao.projekat_id, korisnikId]
-    )
-
-    if (clanstva.length === 0) {
-        throw new Error("Korisnik nije član projekta i ne može komentarisati.");
-    }
+    
+    await provjeriClanstvoNaProjektu(korisnikId, posao.projekat_id);
 
     const [rezultat] = await db.query<ResultSetHeader>(
         `
@@ -50,7 +37,7 @@ export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj
     };
 };
 
-export const dobaviKomentareZaPosao = async (posaoId: Number, korisnikId: Number) => {  
+export const dobaviKomentareZaPosao = async (posaoId: number, korisnikId: number) => {  
 
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
@@ -68,17 +55,7 @@ export const dobaviKomentareZaPosao = async (posaoId: Number, korisnikId: Number
         throw new Error("Posao nije pronađen.");
     }
 
-    const [clanstva] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM ClanstvoNaProjektu
-        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
-        `,
-        [posao.projekat_id, korisnikId]
-    )
-
-    if (clanstva.length === 0) {
-        throw new Error("Korisnik nije član projekta i ne može videti komentare.");
-    }
+    await provjeriClanstvoNaProjektu(korisnikId, posao.projekat_id);
 
     const [komentari] = await db.query<RowDataPacket[]>(
         `

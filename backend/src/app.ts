@@ -8,6 +8,7 @@ import korisnikRoutes from "./routes/korisnikRoutes";
 import projekatRoutes from "./routes/projekatRoutes";
 import posaoRoutes from "./routes/posaoRoutes";
 import komentarRoutes from "./routes/komentarRoutes";
+import prilogRoutes from "./routes/prilogRoutes";
 
 dotenv.config();
 
@@ -42,7 +43,6 @@ app.get("/api/zasticeni", autentifikacija, (req, res) => {
 });
 
 app.use("/api/projekti", projekatRoutes);
-
 app.use("/api/poslovi", posaoRoutes);
-
 app.use("/api/komentari", komentarRoutes);
+app.use("/api/prilozi", prilogRoutes);
