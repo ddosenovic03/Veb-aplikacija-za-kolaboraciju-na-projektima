@@ -1,7 +1,7 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 
-export const prijavaNaPosao = async (posaoId: number, korisnikId: number, predlozeniRok?: string) => {
+export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, predlozeniRok?: string) => {
 
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
@@ -91,4 +91,99 @@ export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number,
         procenat: procenat,
         status: procenat === 0 ? "prijavljen" : procenat === 100 ? "zavrsen" : "u toku"
     }
+};
+
+export const prikaziDetaljePosla = async (posaoId: number, korisnikId: number) => {
+    
+    const [poslovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            p.kreator_id,
+            k.ime AS kreator_ime,
+            k.prezime AS kreator_prezime,
+            k.korisnicko_ime AS kreator_korisnicko_ime,
+            COALESCE(ROUND(AVG(a.procenat), 2), 0) AS procenat_posla
+        FROM Posao p
+        JOIN Korisnik k ON p.kreator_id = k.id
+        LEFT JOIN AngazmanNaPoslu a ON p.id = a.posao_id
+        WHERE p.id = ?
+        GROUP BY
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            p.kreator_id,
+            k.ime,
+            k.prezime,
+            k.korisnicko_ime
+        `,
+        [posaoId]
+    );
+
+    const posao = poslovi[0];
+
+    if (!posao) {
+        throw new Error("Posao nije pronađen");
+    }
+
+    const [clanstva] = await db.query<RowDataPacket[]>(
+        `
+        SELECT * FROM ClanstvoNaProjektu
+        WHERE korisnik_id = ? AND projekat_id = ? AND status = 'prihvacen'
+        `,
+        [korisnikId, posao.projekat_id]
+    );
+
+    if (clanstva.length === 0) {
+        throw new Error("Korisnik nije član projekta.");
+    }
+
+    const [angazovani] = await db.query<RowDataPacket[]>(
+        `
+        SELECT 
+            a.id AS angazman_id,
+            a.korisnik_id,
+            a.predlozeni_rok,
+            a.procenat,
+            a.datum_prijave,
+            k.ime,
+            k.prezime,
+            k.korisnicko_ime
+        FROM AngazmanNaPoslu a
+        JOIN Korisnik k ON a.korisnik_id = k.id
+        WHERE a.posao_id = ?
+        ORDER BY a.datum_prijave ASC
+        `,
+        [posaoId]
+    );
+
+    const procenat = Number(posao.procenat_posla);
+
+    return {
+        posao: {
+            id: posao.id,
+            naziv: posao.naziv,
+            opis: posao.opis,
+            rok: posao.rok,
+            datum_kreiranja: posao.datum_kreiranja,
+            projekat_id: posao.projekat_id,
+            procenat_posla: procenat,
+            status: procenat === 0 ? "nije započet" : procenat === 100 ? "zavrsen" : "u toku",
+            kreator: {
+                id: posao.kreator_id,
+                ime: posao.kreator_ime,
+                prezime: posao.kreator_prezime,
+                korisnicko_ime: posao.kreator_korisnicko_ime
+            }
+        },
+        angazovani
+    };
 };

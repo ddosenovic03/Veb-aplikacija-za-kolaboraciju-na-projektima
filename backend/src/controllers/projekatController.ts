@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import { 
     kreirajProjekat,
     pozoviKorisnikaNaProjekat,
-    odgovoriNaPoziv,
+    odgovoriNaPozivZaProjekat,
     kreirajPosao,
-    prikaziPosloveZaProjekat,
-    prikaziMojeProjekte,
-    prikaziDetaljeProjekta
+    dobaviPosloveZaProjekat,
+    dobaviMojeProjekte,
+    dobaviDetaljeProjekta
 } from '../services/projekatService';
 
 export const kreiranjeProjekta = async (req: Request, res: Response) => {
@@ -30,7 +30,7 @@ export const kreiranjeProjekta = async (req: Request, res: Response) => {
     }
 };
 
-export const pozivanjeKorisnika = async (req: Request, res: Response) => {
+export const pozivanjeKorisnikaNaProjekatController = async (req: Request, res: Response) => {
     try {
         const projekatId = Number(req.params.projekatId);
         const { email } = req.body;
@@ -48,7 +48,7 @@ export const pozivanjeKorisnika = async (req: Request, res: Response) => {
     }
 };
 
-export const prihvatanjePoziva = async (req: Request, res: Response) => {
+export const prihvatanjePozivaNaProjekatController = async (req: Request, res: Response) => {
 
     try {
         const projekatId = Number(req.params.projekatId);
@@ -57,7 +57,7 @@ export const prihvatanjePoziva = async (req: Request, res: Response) => {
             return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
         }
 
-        const rezultat = await odgovoriNaPoziv(projekatId, req.korisnik.id, "prihvacen");
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, req.korisnik.id, "prihvacen");
 
         return res.status(200).json({ poruka: "Poziv prihvaćen.", clanstvo: rezultat });
     } catch (greska: any) {
@@ -66,7 +66,7 @@ export const prihvatanjePoziva = async (req: Request, res: Response) => {
     }
 };
 
-export const odbijanjePoziva = async (req: Request, res: Response) => {
+export const odbijanjePozivaNaProjekatController = async (req: Request, res: Response) => {
 
     try {
         const projekatId = Number(req.params.projekatId);
@@ -75,7 +75,7 @@ export const odbijanjePoziva = async (req: Request, res: Response) => {
             return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
         }
 
-        const rezultat = await odgovoriNaPoziv(projekatId, req.korisnik.id, "odbijen");
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, req.korisnik.id, "odbijen");
 
         return res.status(200).json({ poruka: "Poziv odbijen.", clanstvo: rezultat });
 
@@ -110,7 +110,7 @@ export const kreiranjePosla = async (req: Request, res: Response) => {
     }
 };
 
-export const prikazPoslovaZaProjekat = async (req: Request, res: Response) => {
+export const dobavljanjePoslovaZaProjekatController = async (req: Request, res: Response) => {
 
     try {
         const projekatId = Number(req.params.projekatId);
@@ -119,7 +119,7 @@ export const prikazPoslovaZaProjekat = async (req: Request, res: Response) => {
             return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
         }
 
-        const poslovi = await prikaziPosloveZaProjekat(projekatId, req.korisnik.id);
+        const poslovi = await dobaviPosloveZaProjekat(projekatId, req.korisnik.id);
 
         return res.status(200).json({ poslovi });
     } catch (greska: any) {
@@ -128,13 +128,13 @@ export const prikazPoslovaZaProjekat = async (req: Request, res: Response) => {
     }
 };
 
-export const prikazMojihProjekata = async (req: Request, res: Response) => {
+export const dobavljanjeMojihProjekataController = async (req: Request, res: Response) => {
     try {
         if (!req.korisnik) {
             return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
         }
 
-        const projekti = await prikaziMojeProjekte(req.korisnik.id);
+        const projekti = await dobaviMojeProjekte(req.korisnik.id);
 
         return res.status(200).json({ projekti });
     } catch (greska: any) {
@@ -143,7 +143,7 @@ export const prikazMojihProjekata = async (req: Request, res: Response) => {
     }
 };
 
-export const prikazDetaljaProjekta = async (req: Request, res: Response) => {
+export const dobavljanjeDetaljaProjektaController = async (req: Request, res: Response) => {
     try {
         const projekatId = Number(req.params.projekatId);
 
@@ -151,7 +151,7 @@ export const prikazDetaljaProjekta = async (req: Request, res: Response) => {
             return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
         }
 
-        const projekat = await prikaziDetaljeProjekta(projekatId, req.korisnik.id);
+        const projekat = await dobaviDetaljeProjekta(projekatId, req.korisnik.id);
 
         return res.status(200).json({ projekat });
     } catch (greska: any) {

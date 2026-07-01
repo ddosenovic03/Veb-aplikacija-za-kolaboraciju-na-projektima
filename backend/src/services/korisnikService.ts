@@ -13,32 +13,33 @@ type RegistracijaPodaci = {
   lozinka: string;
 };
 
-export const registracija = async (podaci: RegistracijaPodaci) => {
-  const { ime, prezime, korisnicko_ime, email, lozinka } = podaci;
+export const registrujKorisnika = async (podaci: RegistracijaPodaci) => {
+  
+    const { ime, prezime, korisnicko_ime, email, lozinka } = podaci;
 
-  if (!ime || !prezime || !korisnicko_ime || !email || !lozinka) {
-    throw new Error("Sva polja su obavezna");
-  }
+    if (!ime || !prezime || !korisnicko_ime || !email || !lozinka) {
+      throw new Error("Sva polja su obavezna");
+    }
 
-  const lozinkaHash = await bcrypt.hash(lozinka, 10);
+    const lozinkaHash = await bcrypt.hash(lozinka, 10);
 
-  const [ rezultat ] = await db.query(
-    "INSERT INTO Korisnik (ime, prezime, korisnicko_ime, email, lozinka_hash) VALUES (?, ?, ?, ?, ?)",
-    [ime, prezime, korisnicko_ime, email, lozinkaHash]
-  );
+    const [ rezultat ] = await db.query(
+      "INSERT INTO Korisnik (ime, prezime, korisnicko_ime, email, lozinka_hash) VALUES (?, ?, ?, ?, ?)",
+      [ime, prezime, korisnicko_ime, email, lozinkaHash]
+    );
 
-  return { 
-    id: (rezultat as any).insertId,
-    ime,
-    prezime,
-    korisnicko_ime,
-    email
-  };
+    return { 
+      id: (rezultat as any).insertId,
+      ime,
+      prezime,
+      korisnicko_ime,
+      email
+    };
 
 };
 
 // LOGIN KORISNIKA
-export const login = async (email: string, lozinka: string) => {
+export const prijaviKorisnika = async (email: string, lozinka: string) => {
     if (!email || !lozinka) {
         throw new Error("Email i lozinka su obavezni");
     }

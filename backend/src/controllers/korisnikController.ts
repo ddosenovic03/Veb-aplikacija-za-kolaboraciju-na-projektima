@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { registracija } from "../services/korisnikService";
-import { login } from "../services/korisnikService";
+import { registrujKorisnika } from "../services/korisnikService";
+import { prijaviKorisnika } from "../services/korisnikService";
 
 // REGISTRACIJA KORISNIKA
-export const registracijaHandler = async (req: Request, res: Response) => {
+export const registracijaKorisnikaController = async (req: Request, res: Response) => {
     try {
-        const korisnik = await registracija(req.body);
+        const korisnik = await registrujKorisnika(req.body);
     
         res.status(201).json({
             poruka : "Korisnik uspješno registrovan",
@@ -24,10 +24,10 @@ export const registracijaHandler = async (req: Request, res: Response) => {
 };
 
 // LOGIN KORISNIKA
-export const loginHandler = async (req: Request, res: Response) => {
+export const prijavaKorisnikaController = async (req: Request, res: Response) => {
     try {
         const { email, lozinka } = req.body;
-        const rezultat = await login(email, lozinka);
+        const rezultat = await prijaviKorisnika(email, lozinka);
         res.json(rezultat);
     } catch (greska: any) {
         console.error(greska);

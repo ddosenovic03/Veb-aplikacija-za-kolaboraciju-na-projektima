@@ -55,7 +55,7 @@ export const kreirajProjekat = async (podaci: KreiranjeProjektaPodaci) => {
 
 };
 
-export const pozoviKorisnikaNaProjekat=  async (projekatId: number, korisnikId: number, email: string) => {
+export const pozoviKorisnikaNaProjekat = async (projekatId: number, korisnikId: number, email: string) => {
     if (!email) {
         throw new Error("Email korisnika je obavezan.");
     }
@@ -116,7 +116,7 @@ export const pozoviKorisnikaNaProjekat=  async (projekatId: number, korisnikId: 
     };
 };
 
-export const odgovoriNaPoziv = async (projekatId: number, korisnikId: number, status: "prihvacen" | "odbijen") => {
+export const odgovoriNaPozivZaProjekat = async (projekatId: number, korisnikId: number, status: "prihvacen" | "odbijen") => {
     
     const [clanstva] = await db.query<RowDataPacket[]>(
         `
@@ -188,7 +188,7 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
     };
 };
 
-export const prikaziPosloveZaProjekat = async (projekatId: Number, korisnikId: number) => {
+export const dobaviPosloveZaProjekat = async (projekatId: Number, korisnikId: number) => {
 
     const [clanstva] = await db.query<RowDataPacket[]>(
         `
@@ -254,7 +254,7 @@ export const prikaziPosloveZaProjekat = async (projekatId: Number, korisnikId: n
     });
 };
 
-export const prikaziMojeProjekte = async (korisnikId: number) => {
+export const dobaviMojeProjekte = async (korisnikId: number) => {
     
     const [projekti] = await db.query<RowDataPacket[]>(
         `
@@ -300,7 +300,7 @@ export const prikaziMojeProjekte = async (korisnikId: number) => {
     });
 };
 
-export const prikaziDetaljeProjekta = async (projekatId: number, korisnikId: number) => {
+export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: number) => {
     
     const [clanstva] = await db.query<RowDataPacket[]>(
         `

@@ -50,7 +50,7 @@ export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj
     };
 };
 
-export const dohvatiKomentareZaPosao = async (posaoId: Number, korisnikId: Number) => {  
+export const dobaviKomentareZaPosao = async (posaoId: Number, korisnikId: Number) => {  
 
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
