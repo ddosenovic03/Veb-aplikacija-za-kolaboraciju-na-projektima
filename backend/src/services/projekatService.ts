@@ -255,6 +255,7 @@ export const prikaziPosloveZaProjekat = async (projekatId: Number, korisnikId: n
 };
 
 export const prikaziMojeProjekte = async (korisnikId: number) => {
+    
     const [projekti] = await db.query<RowDataPacket[]>(
         `
         SELECT 
@@ -297,4 +298,83 @@ export const prikaziMojeProjekte = async (korisnikId: number) => {
             status: procenat === 0 ? "nije započet" : procenat === 100 ? "završen" : "u toku"
         }
     });
+};
+
+export const prikaziDetaljeProjekta = async (projekatId: number, korisnikId: number) => {
+    
+    const [clanstva] = await db.query<RowDataPacket[]>(
+        `
+        SELECT * FROM ClanstvoNaProjektu
+        WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
+        `,
+        [projekatId, korisnikId]
+    );
+
+    if (clanstva.length === 0) {
+        throw new Error("Samo prihvaćeni članovi mogu da vide detalje projekta.");
+    }
+
+    const [projekti] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.datum_kreiranja,
+            p.vlasnik_id,
+            v.ime AS vlasnik_ime,
+            v.prezime AS vlasnik_prezime,
+            v.korisnicko_ime AS vlasnik_korisnicko_ime,
+            COUNT(DISTINCT c.korisnik_id) AS broj_clanova,
+            COUNT(DISTINCT po.id) AS broj_poslova,
+            COALESCE(ROUND(AVG(procenti_poslova.procenat_posla), 2), 0) AS procenat_projekta
+        FROM Projekat p
+        JOIN Korisnik v ON p.vlasnik_id = v.id
+        LEFT JOIN ClanstvoNaProjektu c ON c.projekat_id = p.id AND c.status = 'prihvacen'
+        LEFT JOIN Posao po ON po.projekat_id = p.id
+        LEFT JOIN (
+            SELECT
+                posao_id,
+                AVG(procenat) AS procenat_posla
+            FROM AngazmanNaPoslu
+            GROUP BY posao_id
+        ) procenti_poslova ON procenti_poslova.posao_id = po.id
+        WHERE p.id = ?
+        GROUP BY
+            p.id,
+            p.naziv,
+            p.opis,
+            p.datum_kreiranja,
+            p.vlasnik_id,
+            v.ime,
+            v.prezime,
+            v.korisnicko_ime
+        `,
+        [projekatId]
+    );
+
+    const projekat = projekti[0];
+
+    if (!projekat) {
+        throw new Error("Projekat nije pronađen.");
+    }
+
+    const procenat = Number(projekat.procenat_projekta);
+
+    return {
+        id: projekat.id,
+        naziv: projekat.naziv,
+        opis: projekat.opis,
+        datum_kreiranja: projekat.datum_kreiranja,
+        broj_clanova: projekat.broj_clanova,
+        broj_poslova: projekat.broj_poslova,
+        procenat_projekta: procenat,
+        status: procenat === 0 ? "nije započet" : procenat === 100 ? "završen" : "u toku",
+        vlasnik: {
+            id: projekat.vlasnik_id,
+            ime: projekat.vlasnik_ime,
+            prezime: projekat.vlasnik_prezime,
+            korisnicko_ime: projekat.vlasnik_korisnicko_ime
+        }
+    };
 };

@@ -7,13 +7,15 @@ import {
     odbijanjePoziva,
     kreiranjePosla,
     prikazPoslovaZaProjekat,
-    prikazMojihProjekata
+    prikazMojihProjekata,
+    prikazDetaljaProjekta
 } from '../controllers/projekatController';
 
 const router = Router();
 
 router.post("/", autentifikacija, kreiranjeProjekta);
 router.get("/moji", autentifikacija, prikazMojihProjekata);
+router.get("/:projekatId", autentifikacija, prikazDetaljaProjekta);
 router.post("/:projekatId/pozovi", autentifikacija, pozivanjeKorisnika);
 router.patch("/:projekatId/prihvati", autentifikacija, prihvatanjePoziva);
 router.patch("/:projekatId/odbij", autentifikacija, odbijanjePoziva);

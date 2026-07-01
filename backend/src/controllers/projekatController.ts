@@ -5,7 +5,8 @@ import {
     odgovoriNaPoziv,
     kreirajPosao,
     prikaziPosloveZaProjekat,
-    prikaziMojeProjekte
+    prikaziMojeProjekte,
+    prikaziDetaljeProjekta
 } from '../services/projekatService';
 
 export const kreiranjeProjekta = async (req: Request, res: Response) => {
@@ -139,5 +140,22 @@ export const prikazMojihProjekata = async (req: Request, res: Response) => {
     } catch (greska: any) {
         console.error(greska);
         return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikaza mojih projekata." });
+    }
+};
+
+export const prikazDetaljaProjekta = async (req: Request, res: Response) => {
+    try {
+        const projekatId = Number(req.params.projekatId);
+
+        if (!req.korisnik) {
+            return res.status(401).json({ poruka: "Korisnik nije autentifikovan." });
+        }
+
+        const projekat = await prikaziDetaljeProjekta(projekatId, req.korisnik.id);
+
+        return res.status(200).json({ projekat });
+    } catch (greska: any) {
+        console.error(greska);
+        return res.status(400).json({ poruka: greska.message || "Došlo je do greške prilikom prikaza detalja projekta." });
     }
 };
