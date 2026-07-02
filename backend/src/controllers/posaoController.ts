@@ -4,6 +4,7 @@ import {
     azurirajProcenatPosla,
     prikaziDetaljePosla
 } from '../services/posaoService';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
 export const prijavaNaPosaoController = async (req: Request, res: Response) => {
 
@@ -12,15 +13,15 @@ export const prijavaNaPosaoController = async (req: Request, res: Response) => {
         const { predlozeniRok } = req.body;
 
         if (!req.korisnik) {
-            return res.status(401).json({ error: "Korisnik nije autorizovan." });
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
         }
 
         const angazman = await prijaviSeNaPosao(posaoId, req.korisnik.id, predlozeniRok);
 
-        return res.status(201).json({ poruka: "Korisnik je uspešno prijavljen na posao.", angazman });
+        return uspjesanOdgovor(res, angazman, "Korisnik je uspešno prijavljen na posao.", 201);
     } catch (error: any) {
         console.error(error);
-        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prijave na posao." });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prijave na posao.", 400);
     }
 }; 
 
@@ -31,15 +32,15 @@ export const azuriranjeProcentaPoslaController = async (req: Request, res: Respo
         const { procenat } = req.body;
 
         if (!req.korisnik) {
-            return res.status(401).json({ error: "Korisnik nije autorizovan." });
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
         }
 
         const rezultat = await azurirajProcenatPosla(posaoId, req.korisnik.id, Number(procenat));
 
-        return res.status(200).json({ poruka: "Procenat posla je uspešno ažuriran.", angazman: rezultat });
+        return uspjesanOdgovor(res, rezultat, "Procenat posla je uspešno ažuriran.", 200);
     } catch (error: any) {
         console.error(error);
-        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom ažuriranja procenta posla." });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom ažuriranja procenta posla.", 400);
     }
 };
 
@@ -49,14 +50,14 @@ export const prikazDetaljaPoslaController = async (req: Request, res: Response) 
         const posaoId = Number(req.params.posaoId);
 
         if (!req.korisnik) {
-            return res.status(401).json({ error: "Korisnik nije autorizovan." });
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
         }
 
         const rezultat = await prikaziDetaljePosla(posaoId, req.korisnik.id);
 
-        return res.status(200).json(rezultat);
+        return uspjesanOdgovor(res, rezultat, "Detalji posla su uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return res.status(400).json({ greska: error.message || "Došlo je do greške prilikom prikazivanja detalja posla." });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikazivanja detalja posla.", 400);
     }
 };

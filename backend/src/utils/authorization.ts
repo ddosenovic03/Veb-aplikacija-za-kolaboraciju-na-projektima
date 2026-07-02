@@ -13,3 +13,44 @@ export const provjeriClanstvoNaProjektu = async (korisnikId: Number, projekatId:
 
     return clanstva;
 };
+
+export const provjeriVlasnikaProjekta = async (korisnikId: Number, projekatId: Number) => {
+
+    const [projekti] = await db.query<RowDataPacket[]>(
+        "SELECT id FROM Projekat WHERE id = ? AND vlasnik_id = ?", [projekatId, korisnikId]
+    );
+
+    if (projekti.length === 0) {
+        throw new Error("Korisnik nije vlasnik projekta.");
+    }
+};
+
+export const dobaviProjekatIdZaPosao = async (posaoId: Number) => {
+
+    const [poslovi] = await db.query<RowDataPacket[]>(
+        "SELECT projekat_id FROM Posao WHERE id = ?", [posaoId]
+    );
+
+    const posao = poslovi[0];
+
+    if (!posao) {
+        throw new Error("Posao nije pronađen.");
+    }
+
+    return Number(posao.projekat_id);
+};
+
+export const dobaviProjekatIdZaKomentar = async (komentarId: Number) => {
+
+    const [komentari] = await db.query<RowDataPacket[]>(
+        "SELECT p.projekat_id FROM Komentar k JOIN Posao p ON k.posao_id = p.id WHERE k.id = ?", [komentarId]
+    );
+
+    const komentar = komentari[0];
+
+    if (!komentar) {
+        throw new Error("Komentar nije pronađen.");
+    }
+
+    return Number(komentar.projekat_id);
+};

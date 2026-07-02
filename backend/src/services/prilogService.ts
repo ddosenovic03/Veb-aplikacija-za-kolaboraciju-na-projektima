@@ -1,10 +1,12 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "../config/db";
-import { provjeriClanstvoNaProjektu } from "../utils/authorization";
+import { provjeriClanstvoNaProjektu, dobaviProjekatIdZaKomentar } from "../utils/authorization";
 import { izvuciYoutubeVideoId } from "../utils/youtube";
 
 export const dodajPrilog = async (komentarId: Number, korisnikId: Number, tip: string, url: string) => {
     
+    const projekatId = await dobaviProjekatIdZaKomentar(komentarId);
+
     if (!tip) {
         throw new Error("Tip priloga je obavezan.");
     }
@@ -23,7 +25,7 @@ export const dodajPrilog = async (komentarId: Number, korisnikId: Number, tip: s
         throw new Error("Komentar ne postoji.");
     }
 
-    await provjeriClanstvoNaProjektu(korisnikId, komentar.projekat_id);
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
 
     const [rezultat] = await db.query<ResultSetHeader>(
         "INSERT INTO Prilog (komentar_id, tip, url_linka) VALUES (?, ?, ?)", [komentarId, tip, url]
@@ -39,6 +41,8 @@ export const dodajPrilog = async (komentarId: Number, korisnikId: Number, tip: s
 
 export const dobaviPrilogeZaKomentar = async (komentarId: Number, korisnikId: Number) => {
     
+    const projekatId = await dobaviProjekatIdZaKomentar(komentarId);
+
     const [komentari] = await db.query<RowDataPacket[]>(
         "SELECT k.id, p.projekat_id FROM Komentar k JOIN Posao p ON k.posao_id = p.id WHERE k.id = ?", [komentarId]
     );
@@ -48,7 +52,7 @@ export const dobaviPrilogeZaKomentar = async (komentarId: Number, korisnikId: Nu
         throw new Error("Komentar ne postoji.");
     }
 
-    await provjeriClanstvoNaProjektu(korisnikId, komentar.projekat_id);
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
 
     const [prilozi] = await db.query<RowDataPacket[]>(
         "SELECT * FROM Prilog WHERE komentar_id = ? ORDER BY datum_kreiranja ASC", [komentarId]

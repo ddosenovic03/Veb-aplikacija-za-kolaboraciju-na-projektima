@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { dodajPrilog, dobaviPrilogeZaKomentar } from '../services/prilogService';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
 export const dodavanjePrilogaController = async (req: Request, res: Response) => {
     
@@ -8,14 +9,14 @@ export const dodavanjePrilogaController = async (req: Request, res: Response) =>
         const { tip, url } = req.body;
 
         if (!req.korisnik) {
-            return res.status(401).json({ greska: "Korisnik nije autentifikovan." });
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
         }
         
         const prilog = await dodajPrilog(komentarId, req.korisnik.id, tip, url);
 
-        return res.status(201).json({ poruka: "Prilog uspješno dodan.", prilog });
+        return uspjesanOdgovor(res, prilog, "Prilog uspješno dodan.", 201);
     } catch (error: any) {
-        return res.status(500).json({ greska: error.message });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dodavanja priloga.", 500);
     }
 };
 
@@ -25,14 +26,14 @@ export const dobavljanjePrilogaZaKomentarController = async (req: Request, res: 
         const komentarId = Number(req.params.komentarId);
 
         if (!req.korisnik) {
-            return res.status(401).json({ greska: "Korisnik nije autentifikovan." });
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
         }
 
         const prilozi = await dobaviPrilogeZaKomentar(komentarId, req.korisnik.id);
 
-        return res.status(200).json({ prilozi });
+        return uspjesanOdgovor(res, prilozi, "Prilozi uspješno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return res.status(500).json({ greska: error.message });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja priloga.", 500);
     }
 };

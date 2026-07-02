@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { dodajKomentar, dobaviKomentareZaPosao } from '../services/komentarService';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
 export const dodavanjeKomentaraController = async (req: Request, res: Response) => {
 
@@ -9,15 +10,15 @@ export const dodavanjeKomentaraController = async (req: Request, res: Response) 
         const { vidljivost } = req.body;
 
         if (!req.korisnik) {
-            return res.status(401).json({ error: "Korisnik nije autorizovan" });
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
         }
 
         const komentar = await dodajKomentar(posaoId, req.korisnik.id, sadrzaj, vidljivost || "javni");
 
-        return res.status(201).json({ poruka: "Komentar uspešno dodat.", komentar });
+        return uspjesanOdgovor(res, komentar, "Komentar uspešno dodat.", 201);
 
     } catch (error: any) {
-        return res.status(500).json({ greska: error.message });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dodavanja komentara.", 500);
     }
 };
 
@@ -27,14 +28,14 @@ export const dobavljanjeKomentaraZaPosaoController = async (req: Request, res: R
         const posaoId = Number(req.params.posaoId);
 
         if (!req.korisnik) {
-            return res.status(401).json({ greska: "Korisnik nije autorizovan" });
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
         }
 
         const komentari = await dobaviKomentareZaPosao(posaoId, req.korisnik.id);
 
-        return res.status(200).json({ komentari });
+        return uspjesanOdgovor(res, komentari, "Komentari uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return res.status(500).json({ greska: error.message });
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja komentara.", 500);
     }
 };

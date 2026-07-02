@@ -125,7 +125,7 @@ export const prikaziDetaljePosla = async (posaoId: number, korisnikId: number) =
         throw new Error("Posao nije pronađen");
     }
 
-    await provjeriClanstvoNaProjektu(korisnikId, posao.projekatId);
+    await provjeriClanstvoNaProjektu(korisnikId, posao.projekat_id);
 
     const [angazovani] = await db.query<RowDataPacket[]>(
         `

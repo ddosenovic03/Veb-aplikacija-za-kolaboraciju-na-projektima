@@ -161,22 +161,48 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
 
     await provjeriClanstvoNaProjektu(korisnikId, projekatId);
 
-    const [rezultat] = await db.query<ResultSetHeader>(
-        `
-        INSERT INTO Posao (naziv, opis, rok, projekat_id, kreator_id)
-        VALUES (?, ?, ?, ?, ?)
-        `,
-        [naziv, opis || null, rok, projekatId, korisnikId]
-    );
+    const konekcija = await db.getConnection();
 
-    return  {
-        id: rezultat.insertId,
-        naziv,
-        opis: opis || null,
-        rok,
-        projekat_id: projekatId,
-        kreator_id: korisnikId
-    };
+    try {
+        await konekcija.beginTransaction();
+
+        const [rezultat] = await konekcija.query<ResultSetHeader>(
+            `
+            INSERT INTO Posao (naziv, opis, rok, projekat_id, kreator_id)
+            VALUES (?, ?, ?, ?, ?)
+            `,
+            [naziv, opis || null, rok, projekatId, korisnikId]
+        );
+        const posaoId = rezultat.insertId;
+
+        await konekcija.query<ResultSetHeader>(
+            `
+            INSERT INTO AngazmanNaPoslu (posao_id, korisnik_id, predlozeni_rok, procenat)
+            VALUES (?, ?, ?, 0)
+            `,
+            [posaoId, korisnikId, rok]
+        );
+        await konekcija.commit();
+
+        return {
+            id: posaoId,
+            naziv,
+            opis: opis || null,
+            rok,
+            projekat_id: projekatId,
+            kreator_id: korisnikId,
+            angazman: {
+                korisnik_id: korisnikId,
+                procenat: 0,
+                predlozeni_rok: rok
+            }
+        };
+    } catch (greska) {
+        await konekcija.rollback();
+        throw greska;
+    } finally {
+        konekcija.release();
+    }
 };
 
 export const dobaviPosloveZaProjekat = async (projekatId: number, korisnikId: number) => {
@@ -218,7 +244,6 @@ export const dobaviPosloveZaProjekat = async (projekatId: number, korisnikId: nu
         [projekatId]
     );
 
-    // Koristimo .map() da dodamo status svakom posao objektu na osnovu procenta izvršenosti
     return poslovi.map((posao: any) => {
 
         const procenat = Number(posao.procenat_izvrsenosti);
