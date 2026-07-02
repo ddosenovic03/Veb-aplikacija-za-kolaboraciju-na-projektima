@@ -7,7 +7,9 @@ import {
     dobaviPosloveZaProjekat,
     dobaviMojeProjekte,
     dobaviDetaljeProjekta,
-    dobaviPoziveKorisnikaZaProjekat
+    dobaviPoziveKorisnikaNaProjekte,
+    dobaviClanoveProjekta,
+    dobaviPozvaneKorisnikeNaProjekat
 } from '../services/projekatService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
@@ -122,7 +124,7 @@ export const dobavljanjePoslovaZaProjekatController = async (req: Request, res: 
 
         const poslovi = await dobaviPosloveZaProjekat(projekatId, req.korisnik.id);
 
-        return uspjesanOdgovor(res, poslovi, "Poslovi uspešno dohvaćeni.", 200);
+        return uspjesanOdgovor(res, poslovi, "Poslovi uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza poslova za projekat.", 400);
@@ -137,7 +139,7 @@ export const dobavljanjeMojihProjekataController = async (req: Request, res: Res
 
         const projekti = await dobaviMojeProjekte(req.korisnik.id);
 
-        return uspjesanOdgovor(res, projekti, "Moji projekti uspešno dohvaćeni.", 200);
+        return uspjesanOdgovor(res, projekti, "Moji projekti uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza mojih projekata.", 400);
@@ -154,25 +156,61 @@ export const dobavljanjeDetaljaProjektaController = async (req: Request, res: Re
 
         const projekat = await dobaviDetaljeProjekta(projekatId, req.korisnik.id);
 
-        return uspjesanOdgovor(res, projekat, "Detalji projekta uspešno dohvaćeni.", 200);
+        return uspjesanOdgovor(res, projekat, "Detalji projekta uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza detalja projekta.", 400);
     }
 };
 
-export const dobavljanjePozivaKorisnikaZaProjekatController = async (req: Request, res: Response) => {
+export const dobavljanjePozivaKorisnikaNaProjekteController = async (req: Request, res: Response) => {
 
     try {
         if (!req.korisnik) {
             return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
         }
 
-        const pozivi = await dobaviPoziveKorisnikaZaProjekat(req.korisnik.id);
+        const pozivi = await dobaviPoziveKorisnikaNaProjekte(req.korisnik.id);
 
-        return uspjesanOdgovor(res, pozivi, "Pozivi uspešno dohvaćeni.", 200);
+        return uspjesanOdgovor(res, pozivi, "Pozivi na projekat uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza poziva za projekat.", 400);
+    }
+};
+
+export const dobavljanjeClanovaProjektaController = async (req: Request, res: Response) => {
+    
+    try {
+        const projekatId = Number(req.params.projekatId);
+
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
+        }
+
+        const clanovi = await dobaviClanoveProjekta(projekatId, req.korisnik.id);
+
+        return uspjesanOdgovor(res, clanovi, "Članovi uspešno dobavljeni.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja članova projekta.", 400);
+    }
+};
+
+export const dobavljanjePozvanihKorisnikaNaProjekatController = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
+        }
+        
+        const pozivi = await dobaviPozvaneKorisnikeNaProjekat(projekatId, req.korisnik.id);
+
+        return uspjesanOdgovor(res, pozivi, "Pozivi uspešno dobavljeni.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja poziva.", 400);
     }
 };

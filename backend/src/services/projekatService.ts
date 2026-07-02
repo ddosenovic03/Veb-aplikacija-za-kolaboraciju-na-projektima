@@ -375,7 +375,7 @@ export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: numb
     };
 };
 
-export const dobaviPoziveKorisnikaZaProjekat = async (korisnikId: number) => {
+export const dobaviPoziveKorisnikaNaProjekte = async (korisnikId: number) => {
     
     const [pozivi] = await db.query<RowDataPacket[]>(
         `
@@ -414,4 +414,60 @@ export const dobaviPoziveKorisnikaZaProjekat = async (korisnikId: number) => {
             korisnicko_ime: poziv.vlasnik_korisnicko_ime
         }
     }));
+};
+
+export const dobaviClanoveProjekta = async (projekatId: number, korisnikId: number) => {
+
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+
+    const [clanovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            k.id,
+            k.ime,
+            k.prezime,
+            k.korisnicko_ime,
+            k.email,
+            c.status,
+            c.projekat_id,
+            CASE
+                WHEN p.vlasnik_id = k.id THEN 'vlasnik'
+                ELSE 'clan'
+            END AS uloga
+        FROM ClanstvoNaProjektu c
+        JOIN Korisnik k ON c.korisnik_id = k.id
+        JOIN Projekat p ON c.projekat_id = p.id
+        WHERE c.projekat_id = ? AND c.status = 'prihvacen'
+        ORDER BY uloga DESC, k.ime ASC
+        `,
+        [projekatId]
+    );
+
+    return clanovi;
+};
+
+export const dobaviPozvaneKorisnikeNaProjekat = async (projekatId : number, korisnikId: number) => {
+
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+
+    const [pozivi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            k.id,
+            k.ime,
+            k.prezime,
+            k.korisnicko_ime,
+            k.email,
+            c.id AS clanstvo_id,
+            c.status,
+            c.projekat_id
+        FROM ClanstvoNaProjektu c
+        JOIN Korisnik k ON c.korisnik_id = k.id
+        WHERE c.projekat_id = ? AND c.status = 'pozvan'
+        ORDER BY k.ime ASC
+        `,
+        [projekatId]
+    );
+
+    return pozivi;
 };
