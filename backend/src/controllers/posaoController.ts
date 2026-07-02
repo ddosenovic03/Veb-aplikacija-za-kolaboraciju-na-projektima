@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import { 
     prijaviSeNaPosao,
     azurirajProcenatPosla,
-    prikaziDetaljePosla
+    dobaviDetaljePosla,
+    dobaviMojePoslove,
+    dobaviKreiranePoslove
 } from '../services/posaoService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
@@ -44,7 +46,7 @@ export const azuriranjeProcentaPoslaController = async (req: Request, res: Respo
     }
 };
 
-export const prikazDetaljaPoslaController = async (req: Request, res: Response) => {
+export const dobavljanjeDetaljaPoslaController = async (req: Request, res: Response) => {
 
     try {
         const posaoId = Number(req.params.posaoId);
@@ -53,11 +55,43 @@ export const prikazDetaljaPoslaController = async (req: Request, res: Response) 
             return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
         }
 
-        const rezultat = await prikaziDetaljePosla(posaoId, req.korisnik.id);
+        const rezultat = await dobaviDetaljePosla(posaoId, req.korisnik.id);
 
         return uspjesanOdgovor(res, rezultat, "Detalji posla su uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikazivanja detalja posla.", 400);
+    }
+};
+
+export const dobavljanjeMojihPoslovaController = async (req: Request, res: Response) => {
+
+    try {
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
+        }
+
+        const poslovi = await dobaviMojePoslove(req.korisnik.id);
+
+        return uspjesanOdgovor(res, poslovi, "Moji poslovi su uspešno dobavljeni.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja mojih poslova.", 400);
+    }
+};
+
+export const dobavljanjeKreiranihPoslovaController = async (req: Request, res: Response) => {
+
+    try {
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
+        }
+
+        const poslovi = await dobaviKreiranePoslove(req.korisnik.id);
+
+        return uspjesanOdgovor(res, poslovi, "Kreirani poslovi su uspešno dobavljeni.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja kreiranih poslova.", 400);
     }
 };

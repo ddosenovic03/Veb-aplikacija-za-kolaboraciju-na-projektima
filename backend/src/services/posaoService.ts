@@ -80,11 +80,11 @@ export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number,
         posaoId: posaoId,
         korisnikId: korisnikId,
         procenat: procenat,
-        status: procenat === 0 ? "prijavljen" : procenat === 100 ? "zavrsen" : "u toku"
+        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
     }
 };
 
-export const prikaziDetaljePosla = async (posaoId: number, korisnikId: number) => {
+export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) => {
     
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
@@ -157,7 +157,7 @@ export const prikaziDetaljePosla = async (posaoId: number, korisnikId: number) =
             datum_kreiranja: posao.datum_kreiranja,
             projekat_id: posao.projekat_id,
             procenat_posla: procenat,
-            status: procenat === 0 ? "nije započet" : procenat === 100 ? "zavrsen" : "u toku",
+            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku",
             kreator: {
                 id: posao.kreator_id,
                 ime: posao.kreator_ime,
@@ -167,4 +167,101 @@ export const prikaziDetaljePosla = async (posaoId: number, korisnikId: number) =
         },
         angazovani
     };
+};
+
+export const dobaviMojePoslove = async (korisnikId: number) => {
+
+    const [poslovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            pr.naziv AS projekat_naziv,
+            p.kreator_id,
+            k.ime AS kreator_ime,
+            k.prezime AS kreator_prezime,
+            k.korisnicko_ime AS kreator_korisnicko_ime,
+            a.procenat AS moj_procenat,
+            a.predlozeni_rok,
+            COALESCE(ROUND(procenat_posla.procenat_posla, 2), 0) AS procenat_posla
+        FROM AngazmanNaPoslu a
+        JOIN Posao p ON a.posao_id = p.id
+        JOIN Korisnik k ON p.kreator_id = k.id
+        JOIN Projekat pr ON p.projekat_id = pr.id
+        LEFT JOIN (
+            SELECT
+                posao_id,
+                AVG(procenat) as procenat_posla
+            FROM AngazmanNaPoslu
+            GROUP BY posao_id
+        ) procenat_posla ON procenat_posla.posao_id = p.id
+        WHERE a.korisnik_id = ?
+        ORDER BY p.rok ASC
+        `,
+        [korisnikId]
+    );
+
+    return poslovi.map((posao: any) => {
+        const procenat = Number(posao.procenat_posla);
+
+        return {
+            ...posao,
+            kreator: {
+                id: posao.kreator_id,
+                ime: posao.kreator_ime,
+                prezime: posao.kreator_prezime,
+                korisnicko_ime: posao.kreator_korisnicko_ime
+            },
+            moj_procenat: Number(posao.moj_procenat),
+            procenat_posla: procenat,
+            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
+        };
+    });
+};
+
+export const dobaviKreiranePoslove = async (korisnikId: number) => {
+
+    const [poslovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            pr.naziv AS projekat_naziv,
+            COUNT(a.id) AS broj_angazovanih,
+            COALESCE(ROUND(AVG(a.procenat), 2), 0) AS procenat_posla
+        FROM Posao p
+        JOIN Projekat pr ON p.projekat_id = pr.id
+        LEFT JOIN AngazmanNaPoslu a ON p.id = a.posao_id
+        WHERE p.kreator_id = ?
+        GROUP BY
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            pr.naziv
+        ORDER BY p.datum_kreiranja DESC
+        `,
+        [korisnikId]
+    );
+
+    return poslovi.map((posao: any) => {
+        const procenat = Number(posao.procenat_posla);
+
+        return {
+            ...posao,
+            broj_angazovanih: Number(posao.broj_angazovanih),
+            procenat_posla: procenat,
+            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
+        }
+    });
 };
