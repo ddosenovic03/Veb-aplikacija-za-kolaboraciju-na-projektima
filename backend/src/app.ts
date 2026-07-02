@@ -9,6 +9,7 @@ import projekatRoutes from "./routes/projekatRoutes";
 import posaoRoutes from "./routes/posaoRoutes";
 import komentarRoutes from "./routes/komentarRoutes";
 import prilogRoutes from "./routes/prilogRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes"
 
 dotenv.config();
 
@@ -46,3 +47,4 @@ app.use("/api/projekti", projekatRoutes);
 app.use("/api/poslovi", posaoRoutes);
 app.use("/api/komentari", komentarRoutes);
 app.use("/api/prilozi", prilogRoutes);
+app.use("/api/dashboard", dashboardRoutes)

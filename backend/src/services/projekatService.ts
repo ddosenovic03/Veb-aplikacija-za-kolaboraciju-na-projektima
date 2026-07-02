@@ -301,7 +301,7 @@ export const dobaviMojeProjekte = async (korisnikId: number) => {
 
         return {
             ...projekat,
-            status: procenat === 0 ? "nije započet" : procenat === 100 ? "završen" : "u toku"
+            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
         }
     });
 };
@@ -365,7 +365,7 @@ export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: numb
         broj_clanova: projekat.broj_clanova,
         broj_poslova: projekat.broj_poslova,
         procenat_projekta: procenat,
-        status: procenat === 0 ? "nije započet" : procenat === 100 ? "završen" : "u toku",
+        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku",
         vlasnik: {
             id: projekat.vlasnik_id,
             ime: projekat.vlasnik_ime,
@@ -470,4 +470,41 @@ export const dobaviPozvaneKorisnikeNaProjekat = async (projekatId : number, kori
     );
 
     return pozivi;
+};
+
+export const dobaviNapredakProjekta = async (projekatId: number, korisnikId: number) => {
+
+    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+
+    const [redovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            COALESCE(ROUND(AVG(poslovi_procenat.procenat_posla), 2), 0) AS procenat_projekta,
+            SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) = 0 THEN 1 ELSE 0 END) AS broj_nezapocetih,
+            SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) > 0 
+                AND COALESCE(poslovi_procenat.procenat_posla, 0) < 100 THEN 1 ELSE 0 END) AS broj_u_toku,
+            SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) = 100 THEN 1 ELSE 0 END) AS broj_zavrsenih,
+            COUNT(p.id) AS ukupan_broj_poslova
+        FROM Posao p
+        LEFT JOIN (
+            SELECT
+                posao_id,
+                AVG(procenat) as procenat_posla
+            FROM AngazmanNaPoslu
+            GROUP BY posao_id
+        ) poslovi_procenat ON poslovi_procenat.posao_id = p.id
+        WHERE p.projekat_id = ?   
+        `,
+        [projekatId]
+    );
+
+    const napredak: any = redovi[0];
+
+    return {
+        procenat_projekta: Number(napredak.procenat_projekta),
+        ukupan_broj_poslova: Number(napredak.ukupan_broj_poslova),
+        broj_nezapocetih: Number(napredak.broj_nezapocetih),
+        broj_u_toku: Number(napredak.broj_u_toku),
+        broj_zavrsenih: Number(napredak.broj_zavrsenih) 
+    };
 };

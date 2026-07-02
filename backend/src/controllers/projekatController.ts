@@ -9,7 +9,8 @@ import {
     dobaviDetaljeProjekta,
     dobaviPoziveKorisnikaNaProjekte,
     dobaviClanoveProjekta,
-    dobaviPozvaneKorisnikeNaProjekat
+    dobaviPozvaneKorisnikeNaProjekat,
+    dobaviNapredakProjekta
 } from '../services/projekatService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
@@ -212,5 +213,23 @@ export const dobavljanjePozvanihKorisnikaNaProjekatController = async (req: Requ
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja poziva.", 400);
+    }
+};
+
+export const dobavljanjeNapretkaProjektaController = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
+        }
+
+        const napredak = await dobaviNapredakProjekta(projekatId, req.korisnik.id);
+
+        return uspjesanOdgovor(res, napredak, "Napredak projekta uspešno dobavljen.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja napretka projekta.", 400);
     }
 };
