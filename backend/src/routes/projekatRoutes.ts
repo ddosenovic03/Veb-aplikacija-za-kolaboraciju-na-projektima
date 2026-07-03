@@ -12,7 +12,9 @@ import {
     dobavljanjePozivaKorisnikaNaProjekteController,
     dobavljanjeClanovaProjektaController,
     dobavljanjePozvanihKorisnikaNaProjekatController,
-    dobavljanjeNapretkaProjektaController
+    dobavljanjeNapretkaProjektaController,
+    izmjenaProjekta,
+    brisanjeProjekta
 } from '../controllers/projekatController';
 
 const router = Router();
@@ -30,5 +32,7 @@ router.get("/:projekatId/poslovi", autentifikacija, dobavljanjePoslovaZaProjekat
 router.get("/:projekatId/clanovi", autentifikacija, dobavljanjeClanovaProjektaController);
 router.get("/:projekatId/pozivi", autentifikacija, dobavljanjePozvanihKorisnikaNaProjekatController);
 router.get("/:projekatId/napredak", autentifikacija, dobavljanjeNapretkaProjektaController);
+router.patch("/:projekatId", autentifikacija, izmjenaProjekta);
+router.delete("/:projekatId", autentifikacija, brisanjeProjekta);
 
 export default router;

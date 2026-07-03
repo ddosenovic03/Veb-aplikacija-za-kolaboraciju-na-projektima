@@ -10,7 +10,9 @@ import {
     dobaviPoziveKorisnikaNaProjekte,
     dobaviClanoveProjekta,
     dobaviPozvaneKorisnikeNaProjekat,
-    dobaviNapredakProjekta
+    dobaviNapredakProjekta,
+    izmijeniProjekat,
+    obrisiProjekat
 } from '../services/projekatService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 
@@ -231,5 +233,42 @@ export const dobavljanjeNapretkaProjektaController = async (req: Request, res: R
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja napretka projekta.", 400);
+    }
+};
+
+export const izmjenaProjekta = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+        const { naziv, opis } = req.body;
+
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
+        }
+
+        const projekat = await izmijeniProjekat(projekatId, req.korisnik.id, naziv, opis);
+
+        return uspjesanOdgovor(res, projekat, "Projekat je uspešno izmenjen.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom izmene projekta.", 400);
+    }
+};
+
+export const brisanjeProjekta = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
+        }
+
+        const rezultat = await obrisiProjekat(projekatId, req.korisnik.id);
+
+        return uspjesanOdgovor(res, rezultat, "Projekat je uspešno obrisan.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom brisanja projekta.", 400);
     }
 };

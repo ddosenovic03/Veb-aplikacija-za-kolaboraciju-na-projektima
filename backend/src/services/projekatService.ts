@@ -1,6 +1,6 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
-import { provjeriClanstvoNaProjektu } from "../utils/authorization";
+import { provjeriClanstvoNaProjektu, provjeriVlasnikaProjekta } from "../utils/authorization";
 
 type KreiranjeProjektaPodaci = {
     naziv: string;
@@ -506,5 +506,48 @@ export const dobaviNapredakProjekta = async (projekatId: number, korisnikId: num
         broj_nezapocetih: Number(napredak.broj_nezapocetih),
         broj_u_toku: Number(napredak.broj_u_toku),
         broj_zavrsenih: Number(napredak.broj_zavrsenih) 
+    };
+};
+
+export const izmijeniProjekat = async (projekatId: number, korisnikId: number, naziv?: string, opis?: string) => {
+
+    await provjeriVlasnikaProjekta(korisnikId, projekatId);
+
+    if (!naziv && opis === undefined) {
+        throw new Error("Nema podataka za izmijenu projekta.");
+    }
+
+    await db.query(
+        `
+        UPDATE Projekat
+        SET 
+            naziv = COALESCE(?, naziv),
+            opis = COALESCE(?, opis)
+        WHERE id = ?
+        `,
+        [naziv || null, opis ?? null, projekatId]
+    );
+
+    return {
+        id: projekatId,
+        naziv,
+        opis
+    };
+};
+
+export const obrisiProjekat = async (projekatId: number, korisnikId: number) => {
+
+    await provjeriVlasnikaProjekta(korisnikId, projekatId);
+
+    await db.query(
+        `
+        DELETE FROM Projekat
+        WHERE id = ?
+        `,
+        [projekatId]
+    );
+
+    return {
+        id: projekatId
     };
 };
