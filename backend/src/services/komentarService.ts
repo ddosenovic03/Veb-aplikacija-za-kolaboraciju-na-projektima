@@ -8,9 +8,13 @@ export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj
         throw new Error("Sadržaj komentara je obavezan.");
     }
 
+    if (vidljivost !== "javni" && vidljivost !== "privatni") {
+        throw new Error("Vidljivost komentara nije validna.");
+    }
+
     const [poslovi] = await db.query<RowDataPacket[]>(
         "SELECT * FROM Posao WHERE id = ?", [posaoId]
-    )
+    );
 
     const posao = poslovi[0];
 

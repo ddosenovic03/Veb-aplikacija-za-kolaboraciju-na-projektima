@@ -1,8 +1,8 @@
 export const izvediStatusIzProcenta = (procenat: number) => {
 
-    if (procenat === 0) return "nije započet";
-    if (procenat === 100) return "završen";
-    return "u toku";
+    if (procenat === 0) return "nije_zapocet";
+    if (procenat === 100) return "zavrsen";
+    return "u_toku";
 };
 
 export const mapPosaoZaListu = (posao: any) => {

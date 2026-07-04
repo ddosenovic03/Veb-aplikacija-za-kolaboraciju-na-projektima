@@ -30,8 +30,11 @@ export const dodajPrilog = async (komentarId: number, korisnikId: number, tip: s
     const [rezultat] = await db.query<ResultSetHeader>(
         "INSERT INTO Prilog (komentar_id, tip, url_linka) VALUES (?, ?, ?)", [komentarId, tip, url]
     );
+    const prilog = await db.query<ResultSetHeader>(
+        "SELECT * FROM Prilog WHERE id = ?", [rezultat.insertId]
+    );
 
-    return mapPrilog;
+    return mapPrilog(prilog);
 };
 
 export const dobaviPrilogeZaKomentar = async (komentarId: number, korisnikId: number) => {

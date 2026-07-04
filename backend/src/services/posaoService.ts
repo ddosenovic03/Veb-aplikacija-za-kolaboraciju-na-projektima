@@ -86,7 +86,13 @@ export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, pred
         [korisnikId, posaoId, predlozeniRok || null]
     );
 
-    return mapDetaljiPosla;
+    return {
+        id: rezultat.insertId,
+        korisnik_id: korisnikId,
+        posao_id: posaoId,
+        predlozeni_rok: predlozeniRok || null,
+        procenat: 0
+    };
 };
 
 export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number, procenat: number) => {
@@ -116,7 +122,11 @@ export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number,
         [procenat, korisnikId, posaoId]
     );
 
-    return mapPosaoZaListu;
+    return {
+        korisnik_id: korisnikId,
+        posao_id: posaoId,
+        procenat: 0
+    };
 };
 
 export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) => {
@@ -257,4 +267,133 @@ export const dobaviKreiranePoslove = async (korisnikId: number) => {
     );
 
     return poslovi.map(mapPosaoZaListu);
+};
+
+export const provjeriPravoUpravljanjaPoslom = async (posaoId: number, korisnikId: number) => {
+
+    const [poslovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.projekat_id,
+            p.kreator_id,
+            pr.vlasnik_id AS projekat_vlasnik_id
+        FROM Posao p
+        JOIN Projekat pr ON p.projekat_id = pr.id
+        WHERE p.id = ?
+        `,
+        [posaoId]
+    );
+
+    if (poslovi.length === 0) {
+        throw new Error("Posao ne postoji.");
+    }
+
+    const posao: any = poslovi[0];
+    const korisnikJeKreator = Number(posao.kreator_id) === korisnikId;
+    const korisnikJeVlasnikProjekta = Number(posao.projekat_vlasnik_id) === korisnikId;
+
+    if (!korisnikJeKreator && !korisnikJeVlasnikProjekta) {
+        throw new Error("Nemate pravo da upravljate ovim poslom.");
+    }
+
+    return posao;
+};
+
+export const izmijeniPosao = async (posaoId: number, korisnikId: number, naziv?: string, opis?: string, rok?: string) => {
+
+    await provjeriPravoUpravljanjaPoslom(posaoId, korisnikId);
+
+    const poljaZaIzmjenu: string[] = [];
+    const vrijednosti: any[] = [];
+
+    if (naziv !== undefined) {
+        if (!naziv.trim()) {
+            throw new Error("Naziv posla ne sme biti prazan.");
+        }
+
+        poljaZaIzmjenu.push("naziv = ?");
+        vrijednosti.push(naziv);
+    }
+
+    if (opis !== undefined) {
+        poljaZaIzmjenu.push("opis = ?");
+        vrijednosti.push(opis);
+    }
+
+    if (rok !== undefined) {
+        poljaZaIzmjenu.push("rok = ?");
+        vrijednosti.push(rok || null);
+    }
+
+    if (poljaZaIzmjenu.length === 0) {
+        throw new Error("Nema podataka za izmenu posla.");
+    }
+
+    vrijednosti.push(posaoId);
+
+    await db.query<ResultSetHeader>(
+        `
+        UPDATE Posao
+        SET ${poljaZaIzmjenu.join(", ")}
+        WHERE id = ?
+        `,
+        vrijednosti
+    );
+
+    const [azuriraniPoslovi] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            pr.naziv AS projekat_naziv,
+            p.kreator_id,
+            k.ime AS kreator_ime,
+            k.prezime AS kreator_prezime,
+            k.korisnicko_ime AS kreator_korisnicko_ime,
+            COALESCE(statistika_posla.broj_angazovanih, 0) AS broj_angazovanih,
+            COALESCE(ROUND(statistika_posla.procenat_posla, 2), 0) AS procenat_posla
+        FROM Posao p
+        JOIN Projekat pr ON p.projekat_id = pr.id
+        JOIN Korisnik k ON p.kreator_id = k.id
+        LEFT JOIN (
+            SELECT
+                posao_id,
+                COUNT(*) AS broj_angazovanih,
+                AVG(procenat) AS procenat_posla
+            FROM AngazmanNaPoslu
+            GROUP BY posao_id
+        ) statistika_posla ON statistika_posla.posao_id = p.id
+        WHERE p.id = ?
+        `,
+        [posaoId]
+    );
+
+    return azuriraniPoslovi[0];
+};
+
+export const obrisiPosao = async (posaoId: number, korisnikId: number) => {
+
+    const posao = await provjeriPravoUpravljanjaPoslom(posaoId, korisnikId);
+
+    await db.query<ResultSetHeader>(
+        `
+        DELETE FROM Posao
+        WHERE id = ?
+        `,
+        [posaoId]
+    );
+
+    return {
+        id: posaoId,
+        naziv: posao.naziv,
+        projekat_id: posao.projekat_id
+    };
 };

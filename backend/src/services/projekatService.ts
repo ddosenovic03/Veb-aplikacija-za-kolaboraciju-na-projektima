@@ -415,7 +415,11 @@ export const izmijeniProjekat = async (projekatId: number, korisnikId: number, n
         [naziv || null, opis ?? null, projekatId]
     );
 
-    return mapProjekat;
+    return {
+        id: projekatId,
+        naziv: naziv,
+        opis: opis
+    };
 };
 
 export const obrisiProjekat = async (projekatId: number, korisnikId: number) => {

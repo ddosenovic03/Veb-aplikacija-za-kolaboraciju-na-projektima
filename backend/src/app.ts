@@ -22,25 +22,16 @@ app.use(express.json());
 app.get("/", (_req, res) => {
   res.send("Pozdrav!");
 });
-app.get("/api/test-db", async (_req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM Korisnik");
-    res.json(rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Greška pri testiranju baze podataka" });
-  }
-});
 app.get("/api/zasticeni", autentifikacija, (req, res) => {
   res.json({ poruka: "Pristup dozvoljen!", korisnik: req.korisnik });
-});
+}); 
 
 app.use("/api/korisnici", korisnikRoutes);
 app.use("/api/projekti", projekatRoutes);
 app.use("/api/poslovi", posaoRoutes);
 app.use("/api/komentari", komentarRoutes);
 app.use("/api/prilozi", prilogRoutes);
-app.use("/api/dashboard", dashboardRoutes)
+app.use("/api/dashboard", dashboardRoutes);
 
 app.listen(PORT, "127.0.0.1", () => {
   console.log(`Server pokrenut na http://localhost:${PORT}`);
