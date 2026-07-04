@@ -1,6 +1,52 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { provjeriClanstvoNaProjektu } from "../utils/authorization";
+import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
+
+export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv: string, opis: string | undefined, rok: string) => {
+
+    if (!naziv || !rok) {
+        throw new Error("Naziv posla i rok su obavezni.");
+    }
+
+    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
+
+    const konekcija = await db.getConnection();
+
+    try {
+        await konekcija.beginTransaction();
+
+        const [rezultat] = await konekcija.query<ResultSetHeader>(
+            `
+            INSERT INTO Posao (naziv, opis, rok, projekat_id, kreator_id)
+            VALUES (?, ?, ?, ?, ?)
+            `,
+            [naziv, opis || null, rok, projekatId, korisnikId]
+        );
+        const posaoId = rezultat.insertId;
+
+        await konekcija.query<ResultSetHeader>(
+            `
+            INSERT INTO AngazmanNaPoslu (posao_id, korisnik_id, predlozeni_rok, procenat)
+            VALUES (?, ?, ?, 0)
+            `,
+            [posaoId, korisnikId, rok]
+        );
+        await konekcija.commit();
+
+        return {
+            id: posaoId,
+            naziv,
+            opis: opis || null,
+            rok
+        };
+    } catch (greska) {
+        await konekcija.rollback();
+        throw greska;
+    } finally {
+        konekcija.release();
+    }
+};
 
 export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, predlozeniRok?: string) => {
 
@@ -18,7 +64,7 @@ export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, pred
         throw new Error("Posao nije pronađen");
     }
 
-    await provjeriClanstvoNaProjektu(korisnikId, posao.projekatId);
+    await provjeriClanstvoNaProjektu(posao.projekat_id, korisnikId);
 
     const [postojeciAngazmani] = await db.query<RowDataPacket[]>(
         `
@@ -40,13 +86,7 @@ export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, pred
         [korisnikId, posaoId, predlozeniRok || null]
     );
 
-    return {
-        id: rezultat.insertId,
-        posaoId: posaoId,
-        korisnikId: korisnikId,
-        predlozeniRok: predlozeniRok || null,
-        procenat: 0
-    }
+    return mapDetaljiPosla;
 };
 
 export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number, procenat: number) => {
@@ -76,12 +116,7 @@ export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number,
         [procenat, korisnikId, posaoId]
     );
 
-    return {
-        posaoId: posaoId,
-        korisnikId: korisnikId,
-        procenat: procenat,
-        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
-    }
+    return mapPosaoZaListu;
 };
 
 export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) => {
@@ -125,7 +160,7 @@ export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) =>
         throw new Error("Posao nije pronađen");
     }
 
-    await provjeriClanstvoNaProjektu(korisnikId, posao.projekat_id);
+    await provjeriClanstvoNaProjektu(posao.projekat_id, korisnikId);
 
     const [angazovani] = await db.query<RowDataPacket[]>(
         `
@@ -146,27 +181,7 @@ export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) =>
         [posaoId]
     );
 
-    const procenat = Number(posao.procenat_posla);
-
-    return {
-        posao: {
-            id: posao.id,
-            naziv: posao.naziv,
-            opis: posao.opis,
-            rok: posao.rok,
-            datum_kreiranja: posao.datum_kreiranja,
-            projekat_id: posao.projekat_id,
-            procenat_posla: procenat,
-            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku",
-            kreator: {
-                id: posao.kreator_id,
-                ime: posao.kreator_ime,
-                prezime: posao.kreator_prezime,
-                korisnicko_ime: posao.kreator_korisnicko_ime
-            }
-        },
-        angazovani
-    };
+    return mapDetaljiPosla(posao, angazovani);
 };
 
 export const dobaviMojePoslove = async (korisnikId: number) => {
@@ -187,7 +202,8 @@ export const dobaviMojePoslove = async (korisnikId: number) => {
             k.korisnicko_ime AS kreator_korisnicko_ime,
             a.procenat AS moj_procenat,
             a.predlozeni_rok,
-            COALESCE(ROUND(procenat_posla.procenat_posla, 2), 0) AS procenat_posla
+            COALESCE(statistika_posla.broj_angazovanih, 0) AS broj_angazovanih, 
+            COALESCE(ROUND(statistika_posla.procenat_posla, 2), 0) AS procenat_posla
         FROM AngazmanNaPoslu a
         JOIN Posao p ON a.posao_id = p.id
         JOIN Korisnik k ON p.kreator_id = k.id
@@ -195,32 +211,18 @@ export const dobaviMojePoslove = async (korisnikId: number) => {
         LEFT JOIN (
             SELECT
                 posao_id,
-                AVG(procenat) as procenat_posla
+                AVG(procenat) as procenat_posla,
+                COUNT(*) AS broj_angazovanih
             FROM AngazmanNaPoslu
             GROUP BY posao_id
-        ) procenat_posla ON procenat_posla.posao_id = p.id
+        ) statistika_posla ON statistika_posla.posao_id = p.id
         WHERE a.korisnik_id = ?
         ORDER BY p.rok ASC
         `,
         [korisnikId]
     );
 
-    return poslovi.map((posao: any) => {
-        const procenat = Number(posao.procenat_posla);
-
-        return {
-            ...posao,
-            kreator: {
-                id: posao.kreator_id,
-                ime: posao.kreator_ime,
-                prezime: posao.kreator_prezime,
-                korisnicko_ime: posao.kreator_korisnicko_ime
-            },
-            moj_procenat: Number(posao.moj_procenat),
-            procenat_posla: procenat,
-            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
-        };
-    });
+    return poslovi.map(mapPosaoZaListu);
 };
 
 export const dobaviKreiranePoslove = async (korisnikId: number) => {
@@ -254,14 +256,5 @@ export const dobaviKreiranePoslove = async (korisnikId: number) => {
         [korisnikId]
     );
 
-    return poslovi.map((posao: any) => {
-        const procenat = Number(posao.procenat_posla);
-
-        return {
-            ...posao,
-            broj_angazovanih: Number(posao.broj_angazovanih),
-            procenat_posla: procenat,
-            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
-        }
-    });
+    return poslovi.map(mapPosaoZaListu);
 };

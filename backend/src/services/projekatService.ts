@@ -1,6 +1,8 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { provjeriClanstvoNaProjektu, provjeriVlasnikaProjekta } from "../utils/authorization";
+import { mapProjekat, mapPozivZaProjekat, mapNapredakProjekta } from "../dto/projekatDto";
+import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
 
 type KreiranjeProjektaPodaci = {
     naziv: string;
@@ -9,6 +11,7 @@ type KreiranjeProjektaPodaci = {
 };
 
 export const kreirajProjekat = async (podaci: KreiranjeProjektaPodaci) => {
+    
     const { naziv, opis, vlasnik_id } = podaci;
 
     if (!naziv) {
@@ -57,6 +60,7 @@ export const kreirajProjekat = async (podaci: KreiranjeProjektaPodaci) => {
 };
 
 export const pozoviKorisnikaNaProjekat = async (projekatId: number, korisnikId: number, email: string) => {
+    
     if (!email) {
         throw new Error("Email korisnika je obavezan.");
     }
@@ -109,12 +113,7 @@ export const pozoviKorisnikaNaProjekat = async (projekatId: number, korisnikId: 
         [korisnik.id, projekatId]
     );
 
-    return {
-        id: rezultat.insertId,
-        korisnik_id: korisnik.id,
-        projekat_id: projekatId,
-        status: 'pozvan'
-    };
+    return mapPozivZaProjekat;
 };
 
 export const odgovoriNaPozivZaProjekat = async (projekatId: number, korisnikId: number, status: "prihvacen" | "odbijen") => {
@@ -146,68 +145,14 @@ export const odgovoriNaPozivZaProjekat = async (projekatId: number, korisnikId: 
         [status, projekatId, korisnikId]
     );
 
-    return {
-        projekat_id: projekatId,
-        korisnik_id: korisnikId,
-        status
-    };
+    return mapPozivZaProjekat;
 };
 
-export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv: string, opis: string | undefined, rok: string) => {
 
-    if (!naziv || !rok) {
-        throw new Error("Naziv posla i rok su obavezni.");
-    }
-
-    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
-
-    const konekcija = await db.getConnection();
-
-    try {
-        await konekcija.beginTransaction();
-
-        const [rezultat] = await konekcija.query<ResultSetHeader>(
-            `
-            INSERT INTO Posao (naziv, opis, rok, projekat_id, kreator_id)
-            VALUES (?, ?, ?, ?, ?)
-            `,
-            [naziv, opis || null, rok, projekatId, korisnikId]
-        );
-        const posaoId = rezultat.insertId;
-
-        await konekcija.query<ResultSetHeader>(
-            `
-            INSERT INTO AngazmanNaPoslu (posao_id, korisnik_id, predlozeni_rok, procenat)
-            VALUES (?, ?, ?, 0)
-            `,
-            [posaoId, korisnikId, rok]
-        );
-        await konekcija.commit();
-
-        return {
-            id: posaoId,
-            naziv,
-            opis: opis || null,
-            rok,
-            projekat_id: projekatId,
-            kreator_id: korisnikId,
-            angazman: {
-                korisnik_id: korisnikId,
-                procenat: 0,
-                predlozeni_rok: rok
-            }
-        };
-    } catch (greska) {
-        await konekcija.rollback();
-        throw greska;
-    } finally {
-        konekcija.release();
-    }
-};
 
 export const dobaviPosloveZaProjekat = async (projekatId: number, korisnikId: number) => {
 
-    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
 
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
@@ -222,8 +167,8 @@ export const dobaviPosloveZaProjekat = async (projekatId: number, korisnikId: nu
             k.ime AS kreator_ime,
             k.prezime AS kreator_prezime,
             k.korisnicko_ime AS kreator_korisnicko_ime,
-            COUNT (a.id) AS broj_angazovanih,
-            COALESCE(ROUND(AVG(a.procenat), 2), 0) AS procenat_izvrsenosti
+            COUNT(a.id) AS broj_angazovanih,
+            COALESCE(ROUND(AVG(a.procenat), 2), 0) AS procenat_posla
         FROM Posao p
         JOIN Korisnik k ON p.kreator_id = k.id
         LEFT JOIN AngazmanNaPoslu a ON p.id = a.posao_id
@@ -243,21 +188,8 @@ export const dobaviPosloveZaProjekat = async (projekatId: number, korisnikId: nu
         `,
         [projekatId]
     );
-
-    return poslovi.map((posao: any) => {
-
-        const procenat = Number(posao.procenat_izvrsenosti);
-
-        return {
-            ...posao,
-            status:
-                procenat === 0
-                    ? "nije započet"
-                    : procenat === 100
-                    ? "završen"
-                    : "u toku"
-        }
-    });
+    
+    return poslovi.map(mapPosaoZaListu);
 };
 
 export const dobaviMojeProjekte = async (korisnikId: number) => {
@@ -296,19 +228,12 @@ export const dobaviMojeProjekte = async (korisnikId: number) => {
         [korisnikId]
     );
 
-    return projekti.map((projekat: any) => {
-        const procenat = Number(projekat.procenat_projekta);
-
-        return {
-            ...projekat,
-            status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
-        }
-    });
+    return projekti.map(mapProjekat);
 };
 
 export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: number) => {
     
-    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
 
     const [projekti] = await db.query<RowDataPacket[]>(
         `
@@ -355,24 +280,7 @@ export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: numb
         throw new Error("Projekat nije pronađen.");
     }
 
-    const procenat = Number(projekat.procenat_projekta);
-
-    return {
-        id: projekat.id,
-        naziv: projekat.naziv,
-        opis: projekat.opis,
-        datum_kreiranja: projekat.datum_kreiranja,
-        broj_clanova: projekat.broj_clanova,
-        broj_poslova: projekat.broj_poslova,
-        procenat_projekta: procenat,
-        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku",
-        vlasnik: {
-            id: projekat.vlasnik_id,
-            ime: projekat.vlasnik_ime,
-            prezime: projekat.vlasnik_prezime,
-            korisnicko_ime: projekat.vlasnik_korisnicko_ime
-        }
-    };
+    return mapProjekat(projekat);
 };
 
 export const dobaviPoziveKorisnikaNaProjekte = async (korisnikId: number) => {
@@ -398,27 +306,12 @@ export const dobaviPoziveKorisnikaNaProjekte = async (korisnikId: number) => {
         `, [korisnikId]
     );
 
-    return pozivi.map((poziv: any) => ({
-        clanstvo_id: poziv.clanstvo_id,
-        status: poziv.status,
-        projekat: {
-            id: poziv.projekat_id,
-            naziv: poziv.naziv,
-            opis: poziv.opis,
-            datum_kreiranja: poziv.datum_kreiranja,
-        },
-        vlasnik: {
-            id: poziv.vlasnik_id,
-            ime: poziv.vlasnik_ime,
-            prezime: poziv.vlasnik_prezime,
-            korisnicko_ime: poziv.vlasnik_korisnicko_ime
-        }
-    }));
+    return pozivi.map(mapPozivZaProjekat);
 };
 
 export const dobaviClanoveProjekta = async (projekatId: number, korisnikId: number) => {
 
-    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
 
     const [clanovi] = await db.query<RowDataPacket[]>(
         `
@@ -448,7 +341,7 @@ export const dobaviClanoveProjekta = async (projekatId: number, korisnikId: numb
 
 export const dobaviPozvaneKorisnikeNaProjekat = async (projekatId : number, korisnikId: number) => {
 
-    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
 
     const [pozivi] = await db.query<RowDataPacket[]>(
         `
@@ -474,7 +367,7 @@ export const dobaviPozvaneKorisnikeNaProjekat = async (projekatId : number, kori
 
 export const dobaviNapredakProjekta = async (projekatId: number, korisnikId: number) => {
 
-    await provjeriClanstvoNaProjektu(korisnikId, projekatId);
+    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
 
     const [redovi] = await db.query<RowDataPacket[]>(
         `
@@ -498,20 +391,14 @@ export const dobaviNapredakProjekta = async (projekatId: number, korisnikId: num
         [projekatId]
     );
 
-    const napredak: any = redovi[0];
+    const podaci: any = redovi[0];
 
-    return {
-        procenat_projekta: Number(napredak.procenat_projekta),
-        ukupan_broj_poslova: Number(napredak.ukupan_broj_poslova),
-        broj_nezapocetih: Number(napredak.broj_nezapocetih),
-        broj_u_toku: Number(napredak.broj_u_toku),
-        broj_zavrsenih: Number(napredak.broj_zavrsenih) 
-    };
+    return mapNapredakProjekta(podaci);
 };
 
 export const izmijeniProjekat = async (projekatId: number, korisnikId: number, naziv?: string, opis?: string) => {
 
-    await provjeriVlasnikaProjekta(korisnikId, projekatId);
+    await provjeriVlasnikaProjekta(projekatId, korisnikId);
 
     if (!naziv && opis === undefined) {
         throw new Error("Nema podataka za izmijenu projekta.");
@@ -528,16 +415,12 @@ export const izmijeniProjekat = async (projekatId: number, korisnikId: number, n
         [naziv || null, opis ?? null, projekatId]
     );
 
-    return {
-        id: projekatId,
-        naziv,
-        opis
-    };
+    return mapProjekat;
 };
 
 export const obrisiProjekat = async (projekatId: number, korisnikId: number) => {
 
-    await provjeriVlasnikaProjekta(korisnikId, projekatId);
+    await provjeriVlasnikaProjekta(projekatId, korisnikId);
 
     await db.query(
         `

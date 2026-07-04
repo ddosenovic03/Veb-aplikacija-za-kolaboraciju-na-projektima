@@ -5,7 +5,6 @@ import {
     pozivanjeKorisnikaNaProjekatController,
     prihvatanjePozivaNaProjekatController,
     odbijanjePozivaNaProjekatController,
-    kreiranjePosla,
     dobavljanjePoslovaZaProjekatController,
     dobavljanjeMojihProjekataController,
     dobavljanjeDetaljaProjektaController,
@@ -27,7 +26,6 @@ router.get("/:projekatId", autentifikacija, dobavljanjeDetaljaProjektaController
 router.post("/:projekatId/pozovi", autentifikacija, pozivanjeKorisnikaNaProjekatController);
 router.patch("/:projekatId/prihvati", autentifikacija, prihvatanjePozivaNaProjekatController);
 router.patch("/:projekatId/odbij", autentifikacija, odbijanjePozivaNaProjekatController);
-router.post("/:projekatId/poslovi", autentifikacija, kreiranjePosla);
 router.get("/:projekatId/poslovi", autentifikacija, dobavljanjePoslovaZaProjekatController);
 router.get("/:projekatId/clanovi", autentifikacija, dobavljanjeClanovaProjektaController);
 router.get("/:projekatId/pozivi", autentifikacija, dobavljanjePozvanihKorisnikaNaProjekatController);

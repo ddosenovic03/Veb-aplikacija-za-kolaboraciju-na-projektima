@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { 
+    kreirajPosao,
     prijaviSeNaPosao,
     azurirajProcenatPosla,
     dobaviDetaljePosla,
@@ -7,6 +8,31 @@ import {
     dobaviKreiranePoslove
 } from '../services/posaoService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+
+export const kreiranjePosla = async (req: Request, res: Response) => {
+
+    try {
+        const projekatId = Number(req.params.projekatId);
+        const { naziv, opis, rok } = req.body;
+
+        if (!req.korisnik) {
+            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
+        }
+
+        const posao = await kreirajPosao(
+            projekatId,
+            req.korisnik.id,
+            naziv,
+            opis,
+            rok
+        );
+
+        return uspjesanOdgovor(res, posao, "Posao uspešno kreiran.", 201);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom kreiranja posla.", 400);
+    }
+};
 
 export const prijavaNaPosaoController = async (req: Request, res: Response) => {
 

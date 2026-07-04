@@ -1,7 +1,7 @@
 import { RowDataPacket } from "mysql2";
 import { db } from "../config/db";
 
-export const provjeriClanstvoNaProjektu = async (korisnikId: Number, projekatId: Number) => {
+export const provjeriClanstvoNaProjektu = async (projekatId: number, korisnikId: number) => {
     
     const [clanstva] = await db.query<RowDataPacket[]>(
         "SELECT * FROM ClanstvoNaProjektu WHERE korisnik_id = ? AND projekat_id = ? AND status = 'prihvacen'", [korisnikId, projekatId]
@@ -14,7 +14,7 @@ export const provjeriClanstvoNaProjektu = async (korisnikId: Number, projekatId:
     return clanstva;
 };
 
-export const provjeriVlasnikaProjekta = async (korisnikId: Number, projekatId: Number) => {
+export const provjeriVlasnikaProjekta = async (projekatId: number, korisnikId: number) => {
 
     const [projekti] = await db.query<RowDataPacket[]>(
         "SELECT id FROM Projekat WHERE id = ? AND vlasnik_id = ?", [projekatId, korisnikId]
@@ -25,7 +25,7 @@ export const provjeriVlasnikaProjekta = async (korisnikId: Number, projekatId: N
     }
 };
 
-export const dobaviProjekatIdZaPosao = async (posaoId: Number) => {
+export const dobaviProjekatIdZaPosao = async (posaoId: number) => {
 
     const [poslovi] = await db.query<RowDataPacket[]>(
         "SELECT projekat_id FROM Posao WHERE id = ?", [posaoId]
@@ -40,7 +40,7 @@ export const dobaviProjekatIdZaPosao = async (posaoId: Number) => {
     return Number(posao.projekat_id);
 };
 
-export const dobaviProjekatIdZaKomentar = async (komentarId: Number) => {
+export const dobaviProjekatIdZaKomentar = async (komentarId: number) => {
 
     const [komentari] = await db.query<RowDataPacket[]>(
         "SELECT p.projekat_id FROM Komentar k JOIN Posao p ON k.posao_id = p.id WHERE k.id = ?", [komentarId]

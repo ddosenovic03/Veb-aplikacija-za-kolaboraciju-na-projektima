@@ -1,4 +1,4 @@
-export const mapProjekatZaDashboard = (projekat: any) => {
+export const mapProjekat = (projekat: any) => {
     
     const procenat = Number(projekat.procenat_projekta);
 
@@ -11,7 +11,7 @@ export const mapProjekatZaDashboard = (projekat: any) => {
         broj_clanova: Number(projekat.broj_clanova),
         broj_poslova: Number(projekat.broj_poslova),
         procenat_projekta: procenat,
-        status: procenat === 0 ? "nije započet" : procenat === 100 ? "završen" : "u toku"
+        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u toku"
     };
 };
 
@@ -34,3 +34,14 @@ export const mapPozivZaProjekat = (poziv: any) => {
         }
     };
 };
+
+export const mapNapredakProjekta = (podaci: any) => {
+
+    return {
+        procenat_projekta: Number(podaci.procenat_projekta),
+        ukupan_broj_poslova: Number(podaci.ukupan_broj_poslova),
+        broj_nezapocetih: Number(podaci.broj_nezapocetih),
+        broj_u_toku: Number(podaci.broj_u_toku),
+        broj_zavrsenih: Number(podaci.broj_zavrsenih) 
+    };
+}

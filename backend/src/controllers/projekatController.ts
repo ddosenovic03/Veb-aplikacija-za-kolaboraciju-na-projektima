@@ -3,7 +3,6 @@ import {
     kreirajProjekat,
     pozoviKorisnikaNaProjekat,
     odgovoriNaPozivZaProjekat,
-    kreirajPosao,
     dobaviPosloveZaProjekat,
     dobaviMojeProjekte,
     dobaviDetaljeProjekta,
@@ -88,31 +87,6 @@ export const odbijanjePozivaNaProjekatController = async (req: Request, res: Res
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, error.message || "Došlo je do greške prilikom odbijanja poziva.", 400);
-    }
-};
-
-export const kreiranjePosla = async (req: Request, res: Response) => {
-
-    try {
-        const projekatId = Number(req.params.projekatId);
-        const { naziv, opis, rok } = req.body;
-
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const posao = await kreirajPosao(
-            projekatId,
-            req.korisnik.id,
-            naziv,
-            opis,
-            rok
-        );
-
-        return uspjesanOdgovor(res, posao, "Posao uspešno kreiran.", 201);
-    } catch (error: any) {
-        console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom kreiranja posla.", 400);
     }
 };
 

@@ -2,7 +2,7 @@ import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { provjeriClanstvoNaProjektu } from "../utils/authorization";
 
-export const dodajKomentar = async (posaoId: Number, korisnikId: Number, sadrzaj: string, vidljivost: "javni" | "privatni") => {
+export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj: string, vidljivost: "javni" | "privatni") => {
 
     if (!sadrzaj) {
         throw new Error("Sadržaj komentara je obavezan.");
@@ -18,7 +18,7 @@ export const dodajKomentar = async (posaoId: Number, korisnikId: Number, sadrzaj
         throw new Error("Posao nije pronađen.");
     }
     
-    await provjeriClanstvoNaProjektu(korisnikId, posao.projekat_id);
+    await provjeriClanstvoNaProjektu(posao.projekat_id, korisnikId);
 
     const [rezultat] = await db.query<ResultSetHeader>(
         `
@@ -55,7 +55,7 @@ export const dobaviKomentareZaPosao = async (posaoId: number, korisnikId: number
         throw new Error("Posao nije pronađen.");
     }
 
-    await provjeriClanstvoNaProjektu(korisnikId, posao.projekat_id);
+    await provjeriClanstvoNaProjektu(posao.projekat_id, korisnikId);
 
     const [komentari] = await db.query<RowDataPacket[]>(
         `
@@ -74,7 +74,7 @@ export const dobaviKomentareZaPosao = async (posaoId: number, korisnikId: number
         AND (k.vidljivost = 'javni' OR k.korisnik_id = ? OR ? = ?)
         ORDER BY k.datum_kreiranja ASC
         `,
-        [posaoId, korisnikId, korisnikId, posao.kreator_id]
+        [posaoId, korisnikId, korisnikId, posao.vlasnik_id]
     );
 
     return komentari;

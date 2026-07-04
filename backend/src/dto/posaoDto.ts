@@ -1,4 +1,4 @@
-export const IzvediStatusIzProcenta = (procenat: number) => {
+export const izvediStatusIzProcenta = (procenat: number) => {
 
     if (procenat === 0) return "nije započet";
     if (procenat === 100) return "završen";
@@ -8,12 +8,12 @@ export const IzvediStatusIzProcenta = (procenat: number) => {
 export const mapPosaoZaListu = (posao: any) => {
 
     const procenat = Number(posao.procenat_posla);
-
+    
     return {
         ...posao,
         broj_angazovanih: Number(posao.broj_angazovanih),
         procenat_posla: procenat,
-        status: IzvediStatusIzProcenta(procenat)
+        status: izvediStatusIzProcenta(procenat)
     };
 };
 
@@ -30,7 +30,7 @@ export const mapDetaljiPosla = (posao: any, angazovani: any[]) => {
             datum_kreiranja: posao.datum_kreiranja,
             projekat_id: posao.projekat_id,
             procenat_posla: procenat,
-            status: IzvediStatusIzProcenta(procenat),
+            status: izvediStatusIzProcenta(procenat),
             kreator: {
                 id: posao.kreator_id,
                 ime: posao.kreator_ime,
