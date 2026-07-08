@@ -14,235 +14,202 @@ import {
     obrisiProjekat
 } from '../services/projekatService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+import { 
+    provjeriAutentifikacijuKorisnika, 
+    provjeriId,
+    statusGreske,
+    porukaGreske 
+} from '../utils/requestHelper';
 
 export const kreiranjeProjekta = async (req: Request, res: Response) => {
     try {
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const { naziv, opis } = req.body;
-
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
 
         const projekat = await kreirajProjekat({
             naziv,
             opis,
-            vlasnik_id: req.korisnik.id
+            vlasnik_id: korisnikId
         });
 
         return uspjesanOdgovor(res, projekat, "Projekat je uspješno kreiran.", 201);
     } catch (error: any) {
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom kreiranja projekta.", 400);
+        console.log(error);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const pozivanjeKorisnikaNaProjekatController = async (req: Request, res: Response) => {
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
         const { email } = req.body;
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const rezultat = await pozoviKorisnikaNaProjekat(projekatId, req.korisnik.id, email);
+        const rezultat = await pozoviKorisnikaNaProjekat(projekatId, korisnikId, email);
 
         return uspjesanOdgovor(res, rezultat, "Korisnik uspešno pozvan na projekat.", 201);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom pozivanja korisnika na projekat.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const prihvatanjePozivaNaProjekatController = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, req.korisnik.id, "prihvacen");
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, "prihvacen");
 
         return uspjesanOdgovor(res, rezultat, "Poziv prihvaćen.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prihvatanja poziva.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const odbijanjePozivaNaProjekatController = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, req.korisnik.id, "odbijen");
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, "odbijen");
 
         return uspjesanOdgovor(res, rezultat, "Poziv odbijen.", 200);
-
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom odbijanja poziva.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjePoslovaZaProjekatController = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const poslovi = await dobaviPosloveZaProjekat(projekatId, req.korisnik.id);
+        const poslovi = await dobaviPosloveZaProjekat(projekatId, korisnikId);
 
         return uspjesanOdgovor(res, poslovi, "Poslovi uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza poslova za projekat.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjeMojihProjekataController = async (req: Request, res: Response) => {
     try {
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const projekti = await dobaviMojeProjekte(req.korisnik.id);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekti = await dobaviMojeProjekte(korisnikId);
 
         return uspjesanOdgovor(res, projekti, "Moji projekti uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza mojih projekata.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjeDetaljaProjektaController = async (req: Request, res: Response) => {
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const projekat = await dobaviDetaljeProjekta(projekatId, req.korisnik.id);
+        const projekat = await dobaviDetaljeProjekta(projekatId, korisnikId);
 
         return uspjesanOdgovor(res, projekat, "Detalji projekta uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza detalja projekta.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjePozivaKorisnikaNaProjekteController = async (req: Request, res: Response) => {
 
     try {
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const pozivi = await dobaviPoziveKorisnikaNaProjekte(req.korisnik.id);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const pozivi = await dobaviPoziveKorisnikaNaProjekte(korisnikId);
 
         return uspjesanOdgovor(res, pozivi, "Pozivi na projekat uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom prikaza poziva za projekat.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjeClanovaProjektaController = async (req: Request, res: Response) => {
     
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const clanovi = await dobaviClanoveProjekta(projekatId, req.korisnik.id);
+        const clanovi = await dobaviClanoveProjekta(projekatId, korisnikId);
 
         return uspjesanOdgovor(res, clanovi, "Članovi uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja članova projekta.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjePozvanihKorisnikaNaProjekatController = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
-
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
         
-        const pozivi = await dobaviPozvaneKorisnikeNaProjekat(projekatId, req.korisnik.id);
+        const pozivi = await dobaviPozvaneKorisnikeNaProjekat(projekatId, korisnikId);
 
         return uspjesanOdgovor(res, pozivi, "Pozivi uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja poziva.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjeNapretkaProjektaController = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const napredak = await dobaviNapredakProjekta(projekatId, req.korisnik.id);
+        const napredak = await dobaviNapredakProjekta(projekatId, korisnikId);
 
         return uspjesanOdgovor(res, napredak, "Napredak projekta uspešno dobavljen.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja napretka projekta.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const izmjenaProjekta = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
         const { naziv, opis } = req.body;
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const projekat = await izmijeniProjekat(projekatId, req.korisnik.id, naziv, opis);
+        const projekat = await izmijeniProjekat(projekatId, korisnikId, naziv, opis);
 
         return uspjesanOdgovor(res, projekat, "Projekat je uspešno izmenjen.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom izmene projekta.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const brisanjeProjekta = async (req: Request, res: Response) => {
 
     try {
-        const projekatId = Number(req.params.projekatId);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const projekatId = provjeriId(req, "projekatId", "projekta");
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autentifikovan.", 401);
-        }
-
-        const rezultat = await obrisiProjekat(projekatId, req.korisnik.id);
+        const rezultat = await obrisiProjekat(projekatId, korisnikId);
 
         return uspjesanOdgovor(res, rezultat, "Projekat je uspešno obrisan.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom brisanja projekta.", 400);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };

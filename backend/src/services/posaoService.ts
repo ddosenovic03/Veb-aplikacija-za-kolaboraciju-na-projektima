@@ -1,15 +1,67 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
-import { provjeriClanstvoNaProjektu } from "../utils/authorizationHelper";
+import { 
+    provjeriPravoKreiranjaPoslaUProjektu,
+    provjeriPravoPrijaveNaPosao,
+    provjeriPravoPrikazaPosla,
+    provjeriPravoAzuriranjaProcentaPosla,
+    provjeriPravoIzmjenePosla,
+    provjeriPravoBrisanjaPosla
+} from "../utils/authorizationHelper";
 import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
+
+const dobaviPosaoZaListu = async (posaoId: number) => {
+
+    const [poslovi] = await db.query<RowDataPacket[]> (
+        `
+        SELECT
+            p.id,
+            p.naziv,
+            p.opis,
+            p.rok,
+            p.datum_kreiranja,
+            p.projekat_id,
+            pr.naziv AS projekat_naziv,
+            p.kreator_id,
+            k.ime AS kreator_ime,
+            k.prezime AS kreator_prezime,
+            k.korisnicko_ime AS kreator_korisnicko_ime,
+            COALESCE(statistika_posla.broj_angazovanih, 0) AS broj_angazovanih,
+            COALESCE(ROUND(statistika_posla.procenat_posla, 2), 0) AS procenat_posla
+        FROM Posao p
+        JOIN Projekat pr ON p.projekat_id = pr.id
+        JOIN Korisnik k ON p.kreator_id = k.id
+        LEFT JOIN (
+            SELECT
+                posao_id,
+                COUNT(*) AS broj_angazovanih,
+                AVG(procenat) AS procenat_posla
+            FROM AngazmanNaPoslu
+            GROUP BY posao_id
+        ) statistika_posla ON statistika_posla.posao_id = p.id
+        WHERE p.id = ?
+        `,
+        [posaoId]
+    );
+
+    if (poslovi.length === 0) {
+        throw new Error("Posao nije pronađen.");
+    }
+
+    return mapPosaoZaListu(poslovi[0]);
+};
 
 export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv: string, opis: string | undefined, rok: string) => {
 
-    if (!naziv || !rok) {
-        throw new Error("Naziv posla i rok su obavezni.");
+    await provjeriPravoKreiranjaPoslaUProjektu(projekatId, korisnikId);
+
+    if (!naziv || !naziv.trim()) {
+        throw new Error("Naziv posla je obavezan.");
     }
 
-    await provjeriClanstvoNaProjektu(projekatId, korisnikId);
+    if (!rok) {
+        throw new Error("Rok posla je obavezan.");
+    }
 
     const konekcija = await db.getConnection();
 
@@ -21,7 +73,7 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
             INSERT INTO Posao (naziv, opis, rok, projekat_id, kreator_id)
             VALUES (?, ?, ?, ?, ?)
             `,
-            [naziv, opis || null, rok, projekatId, korisnikId]
+            [naziv.trim(), opis?.trim() || null, rok, projekatId, korisnikId]
         );
         const posaoId = rezultat.insertId;
 
@@ -34,15 +86,10 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
         );
         await konekcija.commit();
 
-        return {
-            id: posaoId,
-            naziv,
-            opis: opis || null,
-            rok
-        };
-    } catch (greska) {
+        return await dobaviDetaljePosla(posaoId, korisnikId);
+    } catch (error) {
         await konekcija.rollback();
-        throw greska;
+        throw error;
     } finally {
         konekcija.release();
     }
@@ -50,21 +97,7 @@ export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv
 
 export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, predlozeniRok?: string) => {
 
-    const [poslovi] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM Posao
-        WHERE id = ?
-        `,
-        [posaoId]
-    );
-
-    const posao = poslovi[0];
-
-    if (!posao) {
-        throw new Error("Posao nije pronađen");
-    }
-
-    await provjeriClanstvoNaProjektu(posao.projekat_id, korisnikId);
+    await provjeriPravoPrijaveNaPosao(posaoId, korisnikId);
 
     const [postojeciAngazmani] = await db.query<RowDataPacket[]>(
         `
@@ -97,21 +130,11 @@ export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, pred
 
 export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number, procenat: number) => {
 
-    if (procenat < 0 || procenat > 100) {
+    if (!Number.isFinite(procenat) || procenat < 0 || procenat > 100) {
         throw new Error("Procenat mora biti između 0 i 100.");
     }
 
-    const [angazmani] = await db.query<RowDataPacket[]>(
-        `
-        SELECT * FROM AngazmanNaPoslu
-        WHERE korisnik_id = ? AND posao_id = ?
-        `,
-        [korisnikId, posaoId]
-    );
-
-    if (angazmani.length === 0) {
-        throw new Error("Korisnik nije prijavljen na ovaj posao.");
-    }
+    const angazman = await provjeriPravoAzuriranjaProcentaPosla(posaoId, korisnikId);
 
     await db.query(
         `
@@ -123,14 +146,16 @@ export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number,
     );
 
     return {
-        korisnik_id: korisnikId,
-        posao_id: posaoId,
-        procenat: 0
+        id: angazman?.id,
+        posao_id: angazman?.posao_id,
+        korisnik_id: angazman?.korisnik_id 
     };
 };
 
 export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) => {
     
+    await provjeriPravoPrikazaPosla(posaoId, korisnikId);
+
     const [poslovi] = await db.query<RowDataPacket[]>(
         `
         SELECT
@@ -164,13 +189,9 @@ export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) =>
         [posaoId]
     );
 
-    const posao = poslovi[0];
-
-    if (!posao) {
-        throw new Error("Posao nije pronađen");
+    if (poslovi.length === 0) {
+        throw new Error("Posao nije pronađen.");
     }
-
-    await provjeriClanstvoNaProjektu(posao.projekat_id, korisnikId);
 
     const [angazovani] = await db.query<RowDataPacket[]>(
         `
@@ -191,7 +212,7 @@ export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) =>
         [posaoId]
     );
 
-    return mapDetaljiPosla(posao, angazovani);
+    return mapDetaljiPosla(poslovi[0], angazovani);
 };
 
 export const dobaviMojePoslove = async (korisnikId: number) => {
@@ -269,43 +290,9 @@ export const dobaviKreiranePoslove = async (korisnikId: number) => {
     return poslovi.map(mapPosaoZaListu);
 };
 
-export const provjeriPravoUpravljanjaPoslom = async (posaoId: number, korisnikId: number) => {
-
-    const [poslovi] = await db.query<RowDataPacket[]>(
-        `
-        SELECT
-            p.id,
-            p.naziv,
-            p.opis,
-            p.rok,
-            p.projekat_id,
-            p.kreator_id,
-            pr.vlasnik_id AS projekat_vlasnik_id
-        FROM Posao p
-        JOIN Projekat pr ON p.projekat_id = pr.id
-        WHERE p.id = ?
-        `,
-        [posaoId]
-    );
-
-    if (poslovi.length === 0) {
-        throw new Error("Posao ne postoji.");
-    }
-
-    const posao: any = poslovi[0];
-    const korisnikJeKreator = Number(posao.kreator_id) === korisnikId;
-    const korisnikJeVlasnikProjekta = Number(posao.projekat_vlasnik_id) === korisnikId;
-
-    if (!korisnikJeKreator && !korisnikJeVlasnikProjekta) {
-        throw new Error("Nemate pravo da upravljate ovim poslom.");
-    }
-
-    return posao;
-};
-
 export const izmijeniPosao = async (posaoId: number, korisnikId: number, naziv?: string, opis?: string, rok?: string) => {
 
-    await provjeriPravoUpravljanjaPoslom(posaoId, korisnikId);
+    await provjeriPravoIzmjenePosla(posaoId, korisnikId);
 
     const poljaZaIzmjenu: string[] = [];
     const vrijednosti: any[] = [];
@@ -325,8 +312,12 @@ export const izmijeniPosao = async (posaoId: number, korisnikId: number, naziv?:
     }
 
     if (rok !== undefined) {
+        if (!rok) {
+            throw new Error("Rok posla ne sme biti prazan.");
+        }
+
         poljaZaIzmjenu.push("rok = ?");
-        vrijednosti.push(rok || null);
+        vrijednosti.push(rok);
     }
 
     if (poljaZaIzmjenu.length === 0) {
@@ -344,44 +335,12 @@ export const izmijeniPosao = async (posaoId: number, korisnikId: number, naziv?:
         vrijednosti
     );
 
-    const [azuriraniPoslovi] = await db.query<RowDataPacket[]>(
-        `
-        SELECT
-            p.id,
-            p.naziv,
-            p.opis,
-            p.rok,
-            p.datum_kreiranja,
-            p.projekat_id,
-            pr.naziv AS projekat_naziv,
-            p.kreator_id,
-            k.ime AS kreator_ime,
-            k.prezime AS kreator_prezime,
-            k.korisnicko_ime AS kreator_korisnicko_ime,
-            COALESCE(statistika_posla.broj_angazovanih, 0) AS broj_angazovanih,
-            COALESCE(ROUND(statistika_posla.procenat_posla, 2), 0) AS procenat_posla
-        FROM Posao p
-        JOIN Projekat pr ON p.projekat_id = pr.id
-        JOIN Korisnik k ON p.kreator_id = k.id
-        LEFT JOIN (
-            SELECT
-                posao_id,
-                COUNT(*) AS broj_angazovanih,
-                AVG(procenat) AS procenat_posla
-            FROM AngazmanNaPoslu
-            GROUP BY posao_id
-        ) statistika_posla ON statistika_posla.posao_id = p.id
-        WHERE p.id = ?
-        `,
-        [posaoId]
-    );
-
-    return azuriraniPoslovi[0];
+    return await dobaviPosaoZaListu(posaoId);
 };
 
 export const obrisiPosao = async (posaoId: number, korisnikId: number) => {
 
-    const posao = await provjeriPravoUpravljanjaPoslom(posaoId, korisnikId);
+    const posao = await provjeriPravoBrisanjaPosla(posaoId, korisnikId);
 
     await db.query<ResultSetHeader>(
         `
@@ -393,7 +352,7 @@ export const obrisiPosao = async (posaoId: number, korisnikId: number) => {
 
     return {
         id: posaoId,
-        naziv: posao.naziv,
-        projekat_id: posao.projekat_id
+        naziv: posao?.naziv,
+        projekat_id: posao?.projekat_id
     };
 };

@@ -16,7 +16,7 @@ const router = Router();
 router.get("/moji", autentifikacija, dobavljanjeMojihPoslovaController);
 router.get("/kreirani", autentifikacija, dobavljanjeKreiranihPoslovaController);
 
-router.post("/:posaoId", autentifikacija, kreiranjePosla);
+router.post("/:projekatId", autentifikacija, kreiranjePosla);
 router.post("/:posaoId/prijava", autentifikacija, prijavaNaPosaoController);
 router.patch("/:posaoId/procenat", autentifikacija, azuriranjeProcentaPoslaController);
 router.get("/:posaoId", autentifikacija, dobavljanjeDetaljaPoslaController);

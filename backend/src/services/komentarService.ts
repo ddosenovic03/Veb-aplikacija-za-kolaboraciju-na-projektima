@@ -92,7 +92,7 @@ export const izmijeniKomentar = async (komentarId: number, korisnikId: number, s
     await provjeriPravoIzmjeneKomentara(komentarId, korisnikId);
 
     const poljaZaIzmjenu: string[] = [];
-    const vrijednosti: any[] = [];
+    const vrijednosti: unknown[] = [];
 
     if (sadrzaj !== undefined) {
         if (!sadrzaj.trim()) {
@@ -121,7 +121,7 @@ export const izmijeniKomentar = async (komentarId: number, korisnikId: number, s
     await db.query<ResultSetHeader> (
         `
         UPDATE Komentar
-        SET ${poljaZaIzmjenu.join(",")}
+        SET ${poljaZaIzmjenu.join(", ")}
         WHERE id = ?
         `,
         vrijednosti
