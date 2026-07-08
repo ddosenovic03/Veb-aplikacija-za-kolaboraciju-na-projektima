@@ -1,41 +1,73 @@
 import { Request, Response } from 'express';
-import { dodajKomentar, dobaviKomentareZaPosao } from '../services/komentarService';
+import { 
+    dodajKomentar, 
+    dobaviKomentareZaPosao,
+    izmijeniKomentar,
+    obrisiKomentar 
+} from '../services/komentarService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+import { 
+    provjeriAutentifikacijuKorisnika, 
+    provjeriId,
+    statusGreske,
+    porukaGreske 
+} from '../utils/requestHelper';
 
 export const dodavanjeKomentaraController = async (req: Request, res: Response) => {
 
     try {
-        const posaoId = Number(req.params.posaoId);
-        const { sadrzaj } = req.body;
-        const { vidljivost } = req.body;
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const posaoId = provjeriId(req, "posaoId", "posla");
+        const { sadrzaj, vidljivost } = req.body; 
 
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
-        }
+        const komentar = await dodajKomentar(posaoId, korisnikId, sadrzaj, vidljivost ?? "javni");
 
-        const komentar = await dodajKomentar(posaoId, req.korisnik.id, sadrzaj, vidljivost || "javni");
-
-        return uspjesanOdgovor(res, komentar, "Komentar uspešno dodat.", 201);
-
+        return uspjesanOdgovor(res, komentar, "Komentar uspešno dodan.", 201);
     } catch (error: any) {
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dodavanja komentara.", 500);
+        console.error(error);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };
 
 export const dobavljanjeKomentaraZaPosaoController = async (req: Request, res: Response) => {
 
     try {
-        const posaoId = Number(req.params.posaoId);
-
-        if (!req.korisnik) {
-            return greskaOdgovor(res, "Korisnik nije autorizovan.", 401);
-        }
-
-        const komentari = await dobaviKomentareZaPosao(posaoId, req.korisnik.id);
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const posaoId = provjeriId(req, "posaoId", "posla");
+        const komentari = await dobaviKomentareZaPosao(posaoId, korisnikId);
 
         return uspjesanOdgovor(res, komentari, "Komentari uspešno dobavljeni.", 200);
     } catch (error: any) {
         console.error(error);
-        return greskaOdgovor(res, error.message || "Došlo je do greške prilikom dobavljanja komentara.", 500);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
+    }
+};
+
+export const izmjenaKomentaraController = async (req: Request, res: Response) => {
+
+    try {
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const komentarId = provjeriId(req, "komentarId", "komentara");
+        const { sadrzaj, vidljivost } = req.body;
+        const komentar = await izmijeniKomentar(komentarId, korisnikId, sadrzaj, vidljivost);
+
+        return uspjesanOdgovor(res, komentar, "Komentar je uspešno izmenjen.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
+    }
+};
+
+export const brisanjeKomentaraController = async (req: Request, res: Response) => {
+
+    try {
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const komentarId = provjeriId(req, "komentarId", "komentara");
+        const komentar = await obrisiKomentar(komentarId, korisnikId);
+
+        return uspjesanOdgovor(res, komentar, "Komentar je uspešno obrisan.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
 };

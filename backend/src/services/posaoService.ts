@@ -1,6 +1,6 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
-import { provjeriClanstvoNaProjektu } from "../utils/authorization";
+import { provjeriClanstvoNaProjektu } from "../utils/authorizationHelper";
 import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
 
 export const kreirajPosao = async (projekatId: number, korisnikId: number, naziv: string, opis: string | undefined, rok: string) => {

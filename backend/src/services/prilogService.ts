@@ -1,6 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "../config/db";
-import { provjeriClanstvoNaProjektu, dobaviProjekatIdZaKomentar } from "../utils/authorization";
+import { provjeriClanstvoNaProjektu, dobaviProjekatIdZaKomentar } from "../utils/authorizationHelper";
 import { mapPrilog } from "../dto/prilogDto";
 
 export const dodajPrilog = async (komentarId: number, korisnikId: number, tip: string, url: string) => {

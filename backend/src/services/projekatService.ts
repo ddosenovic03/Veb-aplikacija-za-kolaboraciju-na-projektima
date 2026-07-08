@@ -1,6 +1,6 @@
 import { db } from "../config/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
-import { provjeriClanstvoNaProjektu, provjeriVlasnikaProjekta } from "../utils/authorization";
+import { provjeriClanstvoNaProjektu, provjeriVlasnikaProjekta } from "../utils/authorizationHelper";
 import { mapProjekat, mapPozivZaProjekat, mapNapredakProjekta } from "../dto/projekatDto";
 import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
 
