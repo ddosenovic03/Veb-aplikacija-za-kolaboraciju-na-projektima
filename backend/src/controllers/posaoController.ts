@@ -16,14 +16,21 @@ import {
     statusGreske,
     porukaGreske 
 } from '../utils/requestHelper';
+import { validirajPodatke } from '../utils/validationHelper';
+import { 
+    kreiranjePoslaSchema,
+    izmjenaPoslaSchema,
+    prijavaNaPosaoSchema,
+    azuriranjeProcentaPoslaSchema 
+} from '../validators/posaoValidator';
 
 export const kreiranjePosla = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
-        const { naziv, opis, rok } = req.body;
-        const posao = await kreirajPosao(projekatId, korisnikId, naziv, opis, rok);
+        const podaci = validirajPodatke(kreiranjePoslaSchema, req.body);
+        const posao = await kreirajPosao(projekatId, korisnikId, podaci.naziv, podaci.opis, podaci.rok);
 
         return uspjesanOdgovor(res, posao, "Posao uspešno kreiran.", 201);
     } catch (error: any) {
@@ -37,8 +44,8 @@ export const prijavaNaPosaoController = async (req: Request, res: Response) => {
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const posaoId = provjeriId(req, "posaoId", "posla");
-        const { predlozeniRok } = req.body;
-        const angazman = await prijaviSeNaPosao(posaoId, korisnikId, predlozeniRok);
+        const podaci = validirajPodatke(prijavaNaPosaoSchema, req.body);
+        const angazman = await prijaviSeNaPosao(posaoId, korisnikId, podaci.predlozeni_rok);
 
         return uspjesanOdgovor(res, angazman, "Korisnik je uspešno prijavljen na posao.", 201);
     } catch (error: any) {
@@ -52,8 +59,8 @@ export const azuriranjeProcentaPoslaController = async (req: Request, res: Respo
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const posaoId = provjeriId(req, "posaoId", "posla");
-        const { procenat } = req.body;
-        const rezultat = await azurirajProcenatPosla(posaoId, korisnikId, Number(procenat));
+        const podaci = validirajPodatke(azuriranjeProcentaPoslaSchema, req.body);
+        const rezultat = await azurirajProcenatPosla(posaoId, korisnikId, podaci.procenat);
 
         return uspjesanOdgovor(res, rezultat, "Procenat posla je uspešno ažuriran.", 200);
     } catch (error: any) {
@@ -107,8 +114,8 @@ export const izmjenaPosla = async (req: Request, res: Response) => {
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const posaoId = provjeriId(req, "posaoId", "posla");
-        const { naziv, opis, rok } = req.body;
-        const posao = await izmijeniPosao(posaoId, korisnikId, naziv, opis, rok);
+        const podaci = validirajPodatke(izmjenaPoslaSchema, req.body);
+        const posao = await izmijeniPosao(posaoId, korisnikId, podaci.naziv, podaci.opis, podaci.rok);
 
         return uspjesanOdgovor(res, posao, "Posao je uspešno izmenjen.", 200);
     } catch (error: any) {

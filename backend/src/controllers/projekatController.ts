@@ -20,17 +20,25 @@ import {
     statusGreske,
     porukaGreske 
 } from '../utils/requestHelper';
+import { validirajPodatke } from '../utils/validationHelper';
+import { 
+    kreiranjeProjektaSchema,
+    izmjenaProjektaSchema,
+    pozivanjeKorisnikaNaProjekatSchema,
+    odgovorNaPozivSchema 
+} from '../validators/projekatValidator';
 
 export const kreiranjeProjekta = async (req: Request, res: Response) => {
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
-        const { naziv, opis } = req.body;
-
-        const projekat = await kreirajProjekat({
-            naziv,
-            opis,
-            vlasnik_id: korisnikId
-        });
+        const podaci = validirajPodatke(kreiranjeProjektaSchema, req.body);
+        const projekat = await kreirajProjekat(
+            {
+                naziv: podaci.naziv,
+                opis: podaci.opis,
+                vlasnik_id: korisnikId
+            }
+        );
 
         return uspjesanOdgovor(res, projekat, "Projekat je uspješno kreiran.", 201);
     } catch (error: any) {
@@ -43,9 +51,8 @@ export const pozivanjeKorisnikaNaProjekatController = async (req: Request, res: 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
-        const { email } = req.body;
-
-        const rezultat = await pozoviKorisnikaNaProjekat(projekatId, korisnikId, email);
+        const podaci = validirajPodatke(pozivanjeKorisnikaNaProjekatSchema, req.body);
+        const rezultat = await pozoviKorisnikaNaProjekat(projekatId, korisnikId, podaci.email);
 
         return uspjesanOdgovor(res, rezultat, "Korisnik uspešno pozvan na projekat.", 201);
     } catch (error: any) {
@@ -59,8 +66,8 @@ export const prihvatanjePozivaNaProjekatController = async (req: Request, res: R
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
-
-        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, "prihvacen");
+        const podaci = validirajPodatke(odgovorNaPozivSchema, req.body);
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, podaci.status);
 
         return uspjesanOdgovor(res, rezultat, "Poziv prihvaćen.", 200);
     } catch (error: any) {
@@ -74,8 +81,8 @@ export const odbijanjePozivaNaProjekatController = async (req: Request, res: Res
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
-
-        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, "odbijen");
+        const podaci = validirajPodatke(odgovorNaPozivSchema, req.body);
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, podaci.status);
 
         return uspjesanOdgovor(res, rezultat, "Poziv odbijen.", 200);
     } catch (error: any) {
@@ -188,9 +195,8 @@ export const izmjenaProjekta = async (req: Request, res: Response) => {
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
-        const { naziv, opis } = req.body;
-
-        const projekat = await izmijeniProjekat(projekatId, korisnikId, naziv, opis);
+        const podaci = validirajPodatke(izmjenaProjektaSchema, req.body);
+        const projekat = await izmijeniProjekat(projekatId, korisnikId, podaci.naziv, podaci.opis);
 
         return uspjesanOdgovor(res, projekat, "Projekat je uspešno izmenjen.", 200);
     } catch (error: any) {

@@ -6,10 +6,13 @@ import {
     statusGreske,
     porukaGreske 
 } from '../utils/requestHelper';
+import { validirajPodatke } from "../utils/validationHelper";
+import { registracijaKorisnikaSchema, prijavaKorisnikaSchema } from "../validators/korisnikValidator";
 
 export const registracijaKorisnikaController = async (req: Request, res: Response) => {
     try {
-        const korisnik = await registrujKorisnika(req.body);
+        const podaci = validirajPodatke(registracijaKorisnikaSchema, req.body);
+        const korisnik = await registrujKorisnika(podaci);
     
         return uspjesanOdgovor(res, korisnik, "Korisnik uspješno registrovan.", 201);
     } catch (error: any) {
@@ -20,8 +23,8 @@ export const registracijaKorisnikaController = async (req: Request, res: Respons
 
 export const prijavaKorisnikaController = async (req: Request, res: Response) => {
     try {
-        const { email, lozinka } = req.body;
-        const rezultat = await prijaviKorisnika(email, lozinka);
+        const podaci = validirajPodatke(prijavaKorisnikaSchema, req.body);
+        const rezultat = await prijaviKorisnika(podaci.email, podaci.lozinka);
 
         return uspjesanOdgovor(res, rezultat, "Korisnik uspješno prijavljen.", 200);
     } catch (error: any) {

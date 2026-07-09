@@ -7,14 +7,16 @@ import {
     statusGreske,
     porukaGreske 
 } from '../utils/requestHelper';
+import { validirajPodatke } from '../utils/validationHelper';
+import { dodavanjePrilogaSchema } from '../validators/prilogValidator';
 
 export const dodavanjePrilogaController = async (req: Request, res: Response) => {
     
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const komentarId = provjeriId(req, "komentarId", "komentara");
-        const { tip, url } = req.body;
-        const prilog = await dodajPrilog(komentarId, korisnikId, tip, url);
+        const podaci = validirajPodatke(dodavanjePrilogaSchema, req.body);
+        const prilog = await dodajPrilog(komentarId, korisnikId, podaci.tip, podaci.url);
 
         return uspjesanOdgovor(res, prilog, "Prilog uspješno dodan.", 201);
     } catch (error: any) {

@@ -12,7 +12,7 @@ import { mapPosaoZaListu } from "../dto/posaoDto";
 
 type KreiranjeProjektaPodaci = {
     naziv: string;
-    opis? : string;
+    opis? : string | undefined;
     vlasnik_id : number;  
 };
 

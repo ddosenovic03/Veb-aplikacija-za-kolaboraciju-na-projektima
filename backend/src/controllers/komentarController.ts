@@ -12,15 +12,19 @@ import {
     statusGreske,
     porukaGreske 
 } from '../utils/requestHelper';
+import { validirajPodatke } from '../utils/validationHelper';
+import { 
+    dodavanjeKomentaraSchema,
+    izmjenaKomentaraSchema
+} from '../validators/komentarValidator';
 
 export const dodavanjeKomentaraController = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const posaoId = provjeriId(req, "posaoId", "posla");
-        const { sadrzaj, vidljivost } = req.body; 
-
-        const komentar = await dodajKomentar(posaoId, korisnikId, sadrzaj, vidljivost ?? "javni");
+        const podaci = validirajPodatke(dodavanjeKomentaraSchema, req.body);
+        const komentar = await dodajKomentar(posaoId, korisnikId, podaci.sadrzaj, podaci.vidljivost);
 
         return uspjesanOdgovor(res, komentar, "Komentar uspešno dodan.", 201);
     } catch (error: any) {
@@ -48,8 +52,8 @@ export const izmjenaKomentaraController = async (req: Request, res: Response) =>
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const komentarId = provjeriId(req, "komentarId", "komentara");
-        const { sadrzaj, vidljivost } = req.body;
-        const komentar = await izmijeniKomentar(komentarId, korisnikId, sadrzaj, vidljivost);
+        const podaci = validirajPodatke(izmjenaKomentaraSchema, req.body);
+        const komentar = await izmijeniKomentar(komentarId, korisnikId, podaci.sadrzaj, podaci.vidljivost);
 
         return uspjesanOdgovor(res, komentar, "Komentar je uspešno izmenjen.", 200);
     } catch (error: any) {
