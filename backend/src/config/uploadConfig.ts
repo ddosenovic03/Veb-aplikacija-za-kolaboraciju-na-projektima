@@ -28,7 +28,7 @@ const dozvoljeniTipovi = [
     "application/pdf",
     "text/plain",
     "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordpressingml.document"
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 ];
 
 export const uploadPriloga = multer({

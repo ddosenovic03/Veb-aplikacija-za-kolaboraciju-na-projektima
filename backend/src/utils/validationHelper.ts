@@ -1,4 +1,4 @@
-import { unknown, z } from "zod";
+import { z } from "zod";
 import { HttpGreska } from "./requestHelper";
 
 export const validirajPodatke = <T> (schema: z.ZodType<T>, podaci: unknown): T => {

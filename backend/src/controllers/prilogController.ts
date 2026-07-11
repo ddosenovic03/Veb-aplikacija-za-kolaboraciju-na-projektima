@@ -65,7 +65,7 @@ export const brisanjePrilogaController = async (req: Request, res: Response) => 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const prilogId = provjeriId(req, "prilogId", "priloga");
-        const prilog = obrisiPrilog(prilogId, korisnikId);
+        const prilog = await obrisiPrilog(prilogId, korisnikId);
 
         return uspjesanOdgovor(res, prilog, "Prilog uspešno obrisan.", 200);
     } catch (error: any) {

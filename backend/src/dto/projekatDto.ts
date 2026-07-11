@@ -11,7 +11,7 @@ export const mapProjekat = (projekat: any) => {
         broj_clanova: Number(projekat.broj_clanova),
         broj_poslova: Number(projekat.broj_poslova),
         procenat_projekta: procenat,
-        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u toku"
+        status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
     };
 };
 

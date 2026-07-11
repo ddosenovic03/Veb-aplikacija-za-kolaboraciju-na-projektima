@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const zahtijevajEnv = (naziv: string) => {
 
     const vrijednost = process.env[naziv];

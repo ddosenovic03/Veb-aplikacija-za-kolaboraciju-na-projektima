@@ -67,7 +67,7 @@ export const prihvatanjePozivaNaProjekatController = async (req: Request, res: R
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
         const podaci = validirajPodatke(odgovorNaPozivSchema, req.body);
-        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, podaci.status);
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, "prihvacen");
 
         return uspjesanOdgovor(res, rezultat, "Poziv prihvaćen.", 200);
     } catch (error: any) {
@@ -82,7 +82,7 @@ export const odbijanjePozivaNaProjekatController = async (req: Request, res: Res
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const projekatId = provjeriId(req, "projekatId", "projekta");
         const podaci = validirajPodatke(odgovorNaPozivSchema, req.body);
-        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, podaci.status);
+        const rezultat = await odgovoriNaPozivZaProjekat(projekatId, korisnikId, "odbijen");
 
         return uspjesanOdgovor(res, rezultat, "Poziv odbijen.", 200);
     } catch (error: any) {
