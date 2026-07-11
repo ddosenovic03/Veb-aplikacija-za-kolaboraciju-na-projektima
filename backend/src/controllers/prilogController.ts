@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
-import { dodajPrilog, dobaviPrilogeZaKomentar } from '../services/prilogService';
+import { 
+    dodajPrilog, 
+    dobaviPrilogeZaKomentar,
+    obrisiPrilog 
+} from '../services/prilogService';
 import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
 import { 
     provjeriAutentifikacijuKorisnika, 
@@ -18,7 +22,7 @@ export const dodavanjePrilogaController = async (req: Request, res: Response) =>
         const podaci = validirajPodatke(dodavanjePrilogaSchema, req.body);
         const prilog = await dodajPrilog(komentarId, korisnikId, podaci.tip, podaci.url);
 
-        return uspjesanOdgovor(res, prilog, "Prilog uspješno dodan.", 201);
+        return uspjesanOdgovor(res, prilog, "Prilog uspešno dodan.", 201);
     } catch (error: any) {
         return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
     }
@@ -31,7 +35,21 @@ export const dobavljanjePrilogaZaKomentarController = async (req: Request, res: 
         const komentarId = provjeriId(req, "komentarId", "komentara");
         const prilozi = await dobaviPrilogeZaKomentar(komentarId, korisnikId);
 
-        return uspjesanOdgovor(res, prilozi, "Prilozi uspješno dobavljeni.", 200);
+        return uspjesanOdgovor(res, prilozi, "Prilozi uspešno dobavljeni.", 200);
+    } catch (error: any) {
+        console.error(error);
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
+    }
+};
+
+export const brisanjePrilogaController = async (req: Request, res: Response) => {
+
+    try {
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const prilogId = provjeriId(req, "prilogId", "priloga");
+        const prilog = obrisiPrilog(prilogId, korisnikId);
+
+        return uspjesanOdgovor(res, prilog, "Prilog uspešno obrisan.", 200);
     } catch (error: any) {
         console.error(error);
         return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));

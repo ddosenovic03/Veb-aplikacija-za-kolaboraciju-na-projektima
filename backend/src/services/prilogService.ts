@@ -2,7 +2,8 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "../config/db";
 import { 
     provjeriPravoDodavanjaPrilogaNaKomentar,
-    provjeriPravoPrikazaPrilogaZaKomentar
+    provjeriPravoPrikazaPrilogaZaKomentar,
+    provjeriPravoBrisanjaPriloga
 } from "../utils/authorizationHelper";
 import { mapPrilog } from "../dto/prilogDto";
 
@@ -58,4 +59,19 @@ export const dobaviPrilogeZaKomentar = async (komentarId: number, korisnikId: nu
     );
 
     return prilozi.map(mapPrilog);
+};
+
+export const obrisiPrilog = async (prilogId: number, korisnikId: number) => {
+
+    const prilog = await provjeriPravoBrisanjaPriloga(prilogId, korisnikId);
+
+    await db.query<ResultSetHeader> (
+        `
+        DELETE FROM Prilog
+        WHERE id = ?
+        `,
+        [prilogId]
+    );
+
+    return mapPrilog(prilog);
 };
