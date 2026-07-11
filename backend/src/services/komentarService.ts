@@ -1,4 +1,4 @@
-import { db } from "../config/db";
+import { db } from "../config/dbConfig";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { 
     provjeriPravoDodavanjaKomentaraNaPosao,

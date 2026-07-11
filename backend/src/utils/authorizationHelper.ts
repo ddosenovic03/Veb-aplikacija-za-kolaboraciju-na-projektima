@@ -1,5 +1,5 @@
 import { RowDataPacket } from "mysql2";
-import { db } from "../config/db";
+import { db } from "../config/dbConfig";
 
 interface ProjekatZaProvjeruPrava extends RowDataPacket {
     id: number;

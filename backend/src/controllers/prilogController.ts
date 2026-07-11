@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { 
-    dodajPrilog, 
+    dodajPrilog,
+    dodajFajlPrilog, 
     dobaviPrilogeZaKomentar,
     obrisiPrilog 
 } from '../services/prilogService';
@@ -12,7 +13,10 @@ import {
     porukaGreske 
 } from '../utils/requestHelper';
 import { validirajPodatke } from '../utils/validationHelper';
-import { dodavanjePrilogaSchema } from '../validators/prilogValidator';
+import { 
+    dodavanjePrilogaSchema,
+    dodavanjeFajlPrilogaSchema 
+} from '../validators/prilogValidator';
 
 export const dodavanjePrilogaController = async (req: Request, res: Response) => {
     
@@ -21,6 +25,20 @@ export const dodavanjePrilogaController = async (req: Request, res: Response) =>
         const komentarId = provjeriId(req, "komentarId", "komentara");
         const podaci = validirajPodatke(dodavanjePrilogaSchema, req.body);
         const prilog = await dodajPrilog(komentarId, korisnikId, podaci.tip, podaci.url);
+
+        return uspjesanOdgovor(res, prilog, "Prilog uspešno dodan.", 201);
+    } catch (error: any) {
+        return greskaOdgovor(res, porukaGreske(error, error.message), statusGreske(error));
+    }
+};
+
+export const dodavanjeFajlPrilogaController = async (req: Request, res: Response) => {
+
+    try {
+        const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
+        const komentarId = provjeriId(req, "komentarId", "komentara");
+        const podaci = validirajPodatke(dodavanjeFajlPrilogaSchema, { fajl: req.file });
+        const prilog = await dodajFajlPrilog(komentarId, korisnikId, podaci.fajl);
 
         return uspjesanOdgovor(res, prilog, "Prilog uspešno dodan.", 201);
     } catch (error: any) {

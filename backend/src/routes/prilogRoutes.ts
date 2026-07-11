@@ -1,14 +1,17 @@
 import { Router } from 'express';
 import { autentifikacija } from '../middlewares/authMiddleware';
 import { 
-    dodavanjePrilogaController, 
+    dodavanjePrilogaController,
+    dodavanjeFajlPrilogaController, 
     dobavljanjePrilogaZaKomentarController,
     brisanjePrilogaController 
 } from '../controllers/prilogController';
+import { uploadPriloga } from '../config/uploadConfig';
 
 const router = Router();
 
 router.post("/:komentarId", autentifikacija, dodavanjePrilogaController);
+router.post("/:komentarId/fajl", autentifikacija, uploadPriloga.single("fajl"), dodavanjeFajlPrilogaController);
 router.get("/:komentarId", autentifikacija, dobavljanjePrilogaZaKomentarController);
 router.delete("/:prilogId", autentifikacija, brisanjePrilogaController);
 
