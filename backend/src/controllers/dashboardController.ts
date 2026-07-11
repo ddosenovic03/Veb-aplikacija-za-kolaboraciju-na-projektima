@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { dobaviDashboardStatistiku } from "../services/dashboardService";
-import { uspjesanOdgovor, greskaOdgovor } from "../utils/apiResponse";
+import { uspjesanOdgovor, greskaOdgovor } from "../utils/apiResponseHelper";
 import { 
     provjeriAutentifikacijuKorisnika,
     statusGreske,

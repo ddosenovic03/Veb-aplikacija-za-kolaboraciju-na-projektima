@@ -5,7 +5,7 @@ import {
     izmijeniKomentar,
     obrisiKomentar 
 } from '../services/komentarService';
-import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponseHelper';
 import { 
     provjeriAutentifikacijuKorisnika, 
     provjeriId,

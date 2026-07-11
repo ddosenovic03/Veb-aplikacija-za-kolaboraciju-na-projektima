@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/envConfig";
 
 type JwtPayload = {
     id: number;
@@ -27,7 +28,7 @@ export const autentifikacija = (req: Request, res: Response, next: NextFunction)
             return res.status(401).json({ poruka: "Nedostaje token!" });
         }   
 
-        const dekodiran = jwt.verify(token, process.env.JWT_SECRET as string);
+        const dekodiran = jwt.verify(token, JWT_SECRET);
         if (typeof dekodiran === "string") {
             return res.status(401).json({ poruka: "Neispravan token!" });
         }

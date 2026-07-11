@@ -5,7 +5,7 @@ import {
     dobaviPrilogeZaKomentar,
     obrisiPrilog 
 } from '../services/prilogService';
-import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponseHelper';
 import { 
     provjeriAutentifikacijuKorisnika, 
     provjeriId,

@@ -2,7 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
-import { autentifikacija } from "./middlewares/authMiddleware";
+import { 
+    notFoundHandler, 
+    globalErrorHandler 
+} from "./middlewares/errorMiddleware";
 
 import korisnikRoutes from "./routes/korisnikRoutes";
 import projekatRoutes from "./routes/projekatRoutes";
@@ -20,19 +23,15 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-app.get("/", (_req, res) => {
-  res.send("Pozdrav!");
-});
-app.get("/api/zasticeni", autentifikacija, (req, res) => {
-  res.json({ poruka: "Pristup dozvoljen!", korisnik: req.korisnik });
-}); 
-
 app.use("/api/korisnici", korisnikRoutes);
 app.use("/api/projekti", projekatRoutes);
 app.use("/api/poslovi", posaoRoutes);
 app.use("/api/komentari", komentarRoutes);
 app.use("/api/prilozi", prilogRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 app.listen(PORT, "127.0.0.1", () => {
   console.log(`Server pokrenut na http://localhost:${PORT}`);

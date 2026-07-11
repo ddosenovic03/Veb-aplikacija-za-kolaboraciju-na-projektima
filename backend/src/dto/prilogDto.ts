@@ -1,4 +1,4 @@
-import { izvuciYoutubeVideoId } from "../utils/youtube";
+import { izvuciYoutubeVideoId } from "../utils/youtubeHelper";
 
 export const mapPrilog = (prilog: any) => {
 

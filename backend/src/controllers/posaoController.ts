@@ -9,7 +9,7 @@ import {
     izmijeniPosao,
     obrisiPosao
 } from '../services/posaoService';
-import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponseHelper';
 import { 
     provjeriAutentifikacijuKorisnika, 
     provjeriId,

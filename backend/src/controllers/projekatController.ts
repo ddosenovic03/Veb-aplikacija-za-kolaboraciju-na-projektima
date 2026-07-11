@@ -13,7 +13,7 @@ import {
     izmijeniProjekat,
     obrisiProjekat
 } from '../services/projekatService';
-import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponse';
+import { uspjesanOdgovor, greskaOdgovor } from '../utils/apiResponseHelper';
 import { 
     provjeriAutentifikacijuKorisnika, 
     provjeriId,

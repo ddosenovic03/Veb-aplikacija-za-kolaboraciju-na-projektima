@@ -2,6 +2,7 @@ import { db } from "../config/dbConfig";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/envConfig";
 
 type RegistracijaPodaci = {
   ime: string;
@@ -19,17 +20,6 @@ interface KorisnikRed extends RowDataPacket {
     email: string;
     lozinka_hash: string;
 }
-
-const dobaviJwtSecret = () => {
-
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (!jwtSecret) {
-        throw new Error("JWT_SECRET nije podešen.");
-    }
-
-    return jwtSecret;
-};
 
 export const registrujKorisnika = async (podaci: RegistracijaPodaci) => {
   
@@ -80,7 +70,7 @@ export const prijaviKorisnika = async (email: string, lozinka: string) => {
             id: korisnik.id, 
             email: korisnik.email 
         },
-        dobaviJwtSecret(),
+        JWT_SECRET,
         { 
             expiresIn: "1h"
         }

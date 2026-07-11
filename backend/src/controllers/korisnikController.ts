@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { registrujKorisnika } from "../services/korisnikService";
 import { prijaviKorisnika } from "../services/korisnikService";
-import { uspjesanOdgovor, greskaOdgovor } from "../utils/apiResponse";
+import { uspjesanOdgovor, greskaOdgovor } from "../utils/apiResponseHelper";
 import { 
     statusGreske,
     porukaGreske 
