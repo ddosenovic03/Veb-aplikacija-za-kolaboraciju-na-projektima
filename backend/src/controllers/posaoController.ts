@@ -24,7 +24,7 @@ import {
     azuriranjeProcentaPoslaSchema 
 } from '../validators/posaoValidator';
 
-export const kreiranjePosla = async (req: Request, res: Response) => {
+export const kreiranjePoslaController = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
@@ -109,7 +109,7 @@ export const dobavljanjeKreiranihPoslovaController = async (req: Request, res: R
     }
 };
 
-export const izmjenaPosla = async (req: Request, res: Response) => {
+export const izmjenaPoslaController = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
@@ -124,7 +124,7 @@ export const izmjenaPosla = async (req: Request, res: Response) => {
     }
 };  
 
-export const brisanjePosla = async (req: Request, res: Response) => {
+export const brisanjePoslaController = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;

@@ -137,6 +137,7 @@ export const ProjekatDetaljiPage = () => {
                 </div>
                 <div className="button-row">
                     <Link className="btn btn-secondary" to="/projekti">Nazad</Link>
+                    <Link className="btn btn-primary" to={`/projekti/${projekatId}/poslovi/novi`}>Novi posao</Link>
                     {jeVlasnik && (
                         <>
                             <Link className="btn btn-secondary" to={`/projekti/${projekat.id}/izmena`}>Izmeni</Link>
@@ -220,7 +221,8 @@ export const ProjekatDetaljiPage = () => {
                 (
                     <section className="empty-state compact-empty">
                         <h3>Nema poslova</h3>
-                        <p>Poslovi za ovaj projekat bice dodani u buducnosti.</p>
+                        <p>Unutar projekta trenutno nema poslova.</p>
+                        <Link className="btn btn-primary" to={`/projekti/${projekatId}/poslovi/novi`}>Kreiraj posao</Link>
                     </section>
                 ) :
                 (
@@ -246,6 +248,7 @@ export const ProjekatDetaljiPage = () => {
                                         </Badge>
                                         <strong>{procenatPosla}%</strong>
                                         <ProgressBar value={procenatPosla}/>
+                                        <Link className="btn btn-secondary" to={`/poslovi/${posao.id}`}>Otvori</Link>
                                     </div>
                                 </article>
                             );

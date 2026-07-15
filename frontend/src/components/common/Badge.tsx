@@ -1,5 +1,7 @@
+import type { ReactNode } from "react";
+
 type BadgeProps = {
-    children: string;
+    children: ReactNode;
     variant?: "default" | "success" | "warning" | "danger"
 };
 

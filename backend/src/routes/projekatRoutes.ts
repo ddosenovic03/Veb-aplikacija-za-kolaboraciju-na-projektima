@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { autentifikacija } from '../middlewares/authMiddleware';
 import { 
-    kreiranjeProjekta,
+    kreiranjeProjektaController,
     pozivanjeKorisnikaNaProjekatController,
     prihvatanjePozivaNaProjekatController,
     odbijanjePozivaNaProjekatController,
@@ -12,13 +12,14 @@ import {
     dobavljanjeClanovaProjektaController,
     dobavljanjePozvanihKorisnikaNaProjekatController,
     dobavljanjeNapretkaProjektaController,
-    izmjenaProjekta,
-    brisanjeProjekta
+    izmjenaProjektaController,
+    brisanjeProjektaController
 } from '../controllers/projekatController';
+import { kreiranjePoslaController } from '../controllers/posaoController';
 
 const router = Router();
 
-router.post("/", autentifikacija, kreiranjeProjekta);
+router.post("/", autentifikacija, kreiranjeProjektaController);
 router.get("/moji", autentifikacija, dobavljanjeMojihProjekataController);
 router.get("/pozivi", autentifikacija, dobavljanjePozivaKorisnikaNaProjekteController);
 
@@ -27,10 +28,11 @@ router.post("/:projekatId/pozovi", autentifikacija, pozivanjeKorisnikaNaProjekat
 router.patch("/:projekatId/prihvati", autentifikacija, prihvatanjePozivaNaProjekatController);
 router.patch("/:projekatId/odbij", autentifikacija, odbijanjePozivaNaProjekatController);
 router.get("/:projekatId/poslovi", autentifikacija, dobavljanjePoslovaZaProjekatController);
+router.post("/:projekatId/poslovi", autentifikacija, kreiranjePoslaController);
 router.get("/:projekatId/clanovi", autentifikacija, dobavljanjeClanovaProjektaController);
 router.get("/:projekatId/pozivi", autentifikacija, dobavljanjePozvanihKorisnikaNaProjekatController);
 router.get("/:projekatId/napredak", autentifikacija, dobavljanjeNapretkaProjektaController);
-router.patch("/:projekatId", autentifikacija, izmjenaProjekta);
-router.delete("/:projekatId", autentifikacija, brisanjeProjekta);
+router.patch("/:projekatId", autentifikacija, izmjenaProjektaController);
+router.delete("/:projekatId", autentifikacija, brisanjeProjektaController);
 
 export default router;

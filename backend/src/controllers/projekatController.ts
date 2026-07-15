@@ -28,7 +28,7 @@ import {
     odgovorNaPozivSchema 
 } from '../validators/projekatValidator';
 
-export const kreiranjeProjekta = async (req: Request, res: Response) => {
+export const kreiranjeProjektaController = async (req: Request, res: Response) => {
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
         const podaci = validirajPodatke(kreiranjeProjektaSchema, req.body);
@@ -188,7 +188,7 @@ export const dobavljanjeNapretkaProjektaController = async (req: Request, res: R
     }
 };
 
-export const izmjenaProjekta = async (req: Request, res: Response) => {
+export const izmjenaProjektaController = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;
@@ -203,7 +203,7 @@ export const izmjenaProjekta = async (req: Request, res: Response) => {
     }
 };
 
-export const brisanjeProjekta = async (req: Request, res: Response) => {
+export const brisanjeProjektaController = async (req: Request, res: Response) => {
 
     try {
         const korisnikId = provjeriAutentifikacijuKorisnika(req).id;

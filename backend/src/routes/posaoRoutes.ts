@@ -1,14 +1,13 @@
 import { Router } from "express";
 import { autentifikacija } from "../middlewares/authMiddleware";
 import { 
-    kreiranjePosla,
     prijavaNaPosaoController, 
     azuriranjeProcentaPoslaController, 
     dobavljanjeDetaljaPoslaController,
     dobavljanjeMojihPoslovaController,
     dobavljanjeKreiranihPoslovaController,
-    izmjenaPosla,
-    brisanjePosla
+    izmjenaPoslaController,
+    brisanjePoslaController
 } from "../controllers/posaoController";
 
 const router = Router();
@@ -16,11 +15,10 @@ const router = Router();
 router.get("/moji", autentifikacija, dobavljanjeMojihPoslovaController);
 router.get("/kreirani", autentifikacija, dobavljanjeKreiranihPoslovaController);
 
-router.post("/:projekatId", autentifikacija, kreiranjePosla);
 router.post("/:posaoId/prijava", autentifikacija, prijavaNaPosaoController);
 router.patch("/:posaoId/procenat", autentifikacija, azuriranjeProcentaPoslaController);
 router.get("/:posaoId", autentifikacija, dobavljanjeDetaljaPoslaController);
-router.patch("/:posaoId", autentifikacija, izmjenaPosla);
-router.delete("/:posaoId", autentifikacija, brisanjePosla);
+router.patch("/:posaoId", autentifikacija, izmjenaPoslaController);
+router.delete("/:posaoId", autentifikacija, brisanjePoslaController);
 
 export default router;
