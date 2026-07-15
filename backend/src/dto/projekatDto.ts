@@ -8,9 +8,12 @@ export const mapProjekat = (projekat: any) => {
         opis: projekat.opis,
         datum_kreiranja: projekat.datum_kreiranja,
         vlasnik_id: projekat.vlasnik_id,
+        vlasnik_ime: projekat.vlasnik_ime,
+        vlasnik_prezime: projekat.vlasnik_prezime,
+        vlasnik_korisnicko_ime: projekat.vlasnik_korisnicko_ime,
         broj_clanova: Number(projekat.broj_clanova),
         broj_poslova: Number(projekat.broj_poslova),
-        procenat_projekta: procenat,
+        procenat: procenat,
         status: procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku"
     };
 };

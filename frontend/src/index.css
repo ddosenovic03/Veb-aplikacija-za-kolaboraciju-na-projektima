@@ -497,3 +497,288 @@ textarea {
     border-radius: 16px;
   }
 }
+
+.page-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.page-actions h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.page-actions p {
+  margin-top: 0;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-link-reset {
+  color: inherit;
+  text-decoration: none;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.project-card {
+  background: #ffffff;
+  border: 1px solid #e4e8f0;
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.project-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.project-card h3,
+.list-card h3,
+.task-row h3 {
+  margin: 0 0 8px;
+}
+
+.project-card p,
+.list-card p,
+.task-row p {
+  margin: 0;
+  color: #64748b;
+}
+
+.project-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-label-row {
+  display: flex;
+  justify-content: space-between;
+  color: #475569;
+}
+
+.project-meta,
+.task-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.empty-state {
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 22px;
+  padding: 32px;
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+}
+
+.empty-state p {
+  color: #64748b;
+}
+
+.compact-empty {
+  padding: 20px;
+}
+
+.standard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.list-card {
+  background: #ffffff;
+  border: 1px solid #e4e8f0;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.06);
+}
+
+.list-card-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.list-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.small-text {
+  font-size: 14px;
+}
+
+.details-hero {
+  background: #ffffff;
+  border: 1px solid #e4e8f0;
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.06);
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.details-hero p {
+  color: #64748b;
+}
+
+.hero-progress-card {
+  background: #f8fafc;
+  border: 1px solid #e4e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-progress-card span {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.hero-progress-card strong {
+  font-size: 38px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mini-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.mini-list-item:last-child {
+  border-bottom: none;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.task-row {
+  border: 1px solid #e4e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 20px;
+}
+
+.task-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task-progress strong {
+  font-size: 24px;
+}
+
+@media (max-width: 1180px) {
+  .project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .details-grid,
+  .details-hero,
+  .task-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-actions,
+  .list-card-main {
+    flex-direction: column;
+  }
+
+  .list-card-actions,
+  .form-actions,
+  .button-row {
+    justify-content: stretch;
+  }
+
+  .list-card-actions .btn,
+  .form-actions .btn,
+  .button-row .btn {
+    width: 100%;
+  }
+}
