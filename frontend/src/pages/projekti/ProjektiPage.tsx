@@ -96,12 +96,12 @@ export const ProjektiPage = () => {
 
                                     <Link className="btn btn-secondary btn-full" to={`/projekti/${projekat.id}`}>Otvori projekat</Link>
                                 </article>
-                            );
+                            )
                         }) 
-                        };
+                        }
                     </div>
                 )
-            };
+            }
         </div>
     );
 };

@@ -17,6 +17,7 @@ import { formatirajKorisnika } from "../../utils/userFormat";
 import { ProgressBar } from "../../components/common/ProgressBar";
 import { Card } from "../../components/common/Card";
 import { Input } from "../../components/common/Input";
+import { KomentariSection } from "../../components/komentari/KomentariSection";
 
 export const PosaoDetaljiPage = () => {
 
@@ -251,9 +252,7 @@ export const PosaoDetaljiPage = () => {
                 </Card>
             </div>
 
-            <Card title="Komentari i prilozi">
-                <p className="muted-text">Izrada je u toku!</p>
-            </Card>
+            <KomentariSection posaoId={posao.id} projekatVlasnikId={projekat?.vlasnik_id ?? projekat?.vlasnik?.id} />
         </div>
     );
 };

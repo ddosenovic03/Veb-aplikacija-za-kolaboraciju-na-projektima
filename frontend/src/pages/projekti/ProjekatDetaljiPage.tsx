@@ -88,7 +88,7 @@ export const ProjekatDetaljiPage = () => {
             const osvjezeniPozivi = await dobaviPoziveZaProjekat(projekatId);
             setPozivi(osvjezeniPozivi);
             setEmail("");
-            setUspjeh("Poziv je uspešno poslan.");
+            setUspjeh("Poziv je uspešno poslat.");
         } catch (error: unknown) {
             setGreska(izvuciPorukuGreske(error, "Poziv nije poslan."));
         } finally {

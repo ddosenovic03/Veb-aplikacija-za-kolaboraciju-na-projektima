@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { dobaviDashboardStatistiku } from "../../api/dashboardApi";
-import { Card } from "../../components/common/Card";
 import { ErrorMessage } from "../../components/common/ErrorMessage";
 import { Loading } from "../../components/common/Loading";
 import { StatCard } from "../../components/common/StatCard";
@@ -88,10 +87,6 @@ export const DashboardPage = () => {
                     description="Komentari koje ste napisali"
                 />
             </div>
-
-            <Card title="Sledeći koraci">
-                <p className="muted-text">U sledećem sprintu se povezuje lista projekata, kreiranje projekta i prihvatanje poziva.</p>
-            </Card>
         </div>
     );
 };

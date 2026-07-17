@@ -846,3 +846,70 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.comment-card {
+  border: 1px solid #e4e8f0;
+  border-radius: 20px;
+  padding: 20px;
+  background: #f8fafc;
+}
+
+.comment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.comment-content {
+  margin: 0 0 16px;
+  color: #334155;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.align-end {
+  align-items: end;
+}
+
+@media (max-width: 900px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .comment-actions {
+    flex-direction: column;
+  }
+
+  .comment-actions .btn {
+    width: 100%;
+  }
+}

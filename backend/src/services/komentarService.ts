@@ -79,7 +79,7 @@ export const dobaviKomentareZaPosao = async (posaoId: number, korisnikId: number
         JOIN Korisnik ko ON k.korisnik_id = ko.id
         WHERE k.posao_id = ?
         AND (k.vidljivost = 'javni' OR k.korisnik_id = ? OR ? = ?)
-        ORDER BY k.datum_kreiranja ASC
+        ORDER BY k.datum_kreiranja DESC
         `,
         [posaoId, korisnikId, korisnikId, posao?.projekat_vlasnik_id]
     );
