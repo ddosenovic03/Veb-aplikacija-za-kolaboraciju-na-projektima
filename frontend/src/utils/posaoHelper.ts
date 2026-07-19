@@ -10,7 +10,9 @@ export const dobaviStatusPosla = (posao: PosaoZaListu | PosaoDetalji) => {
 
     const procenat = dobaviProcenatPosla(posao);
 
-    return posao.status ?? procenat === 0 ? "nije_zapocet" : procenat === 100 ? "zavrsen" : "u_toku";
+    if (procenat === 0) return "nije_zapocet";
+    if (procenat === 100) return "zavrsen";
+    return "u_toku";
 };
 
 export const dobaviKreatoraPosla = (posao: PosaoZaListu | PosaoDetalji): KratakKorisnik | null => {
