@@ -12,6 +12,9 @@ import { dobaviAutoraKomentara } from "../../utils/komentarHelper";
 import { formatirajKorisnika } from "../../utils/userFormat";
 import { formatirajDatum } from "../../utils/dateFormat";
 import { Badge } from "../common/Badge";
+import type { Prilog } from "../../types/prilog";
+import { dobaviPrilogeZaKomentar } from "../../api/prilogApi";
+import { PriloziKomentara } from "./PriloziKomentara";
 
 type KomentariSectionProps = {
     posaoId: number;
@@ -23,6 +26,7 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
     const { korisnik } = useAuth();
 
     const [komentari, setKomentari] = useState<Komentar[]>([]);
+    const [priloziKomentara, setPriloziKomentara] = useState<Record<number, Prilog[]>>({});
 
     const [noviSadrzaj, setNoviSadrzaj] = useState("");
     const [novaVidljivost, setNovaVidljivost] = useState<VidljivostKomentara>("javni");
@@ -42,10 +46,24 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
         try {
             const podaci = await dobaviKomentareZaPosao(posaoId);
             setKomentari(podaci);
+            await ucitajPrilogeKomentara(podaci);
         } catch (error: unknown) {
             setGreska(izvuciPorukuGreske(error, "Komentari nisu učitani."));
         }
     }, [posaoId]);
+    const ucitajPrilogeKomentara = useCallback(async (listaKomentara: Komentar[]) => {
+        const parovi = await Promise.all(listaKomentara.map(async (komentar) => {
+            const prilozi = await dobaviPrilogeZaKomentar(komentar.id);
+            return [komentar.id, prilozi] as const;
+        }));
+
+        setPriloziKomentara(Object.fromEntries(parovi));
+    }, []);
+    const osvjeziPrilogeKomentara = async (komentarId: number) => {
+        const prilozi = await dobaviPrilogeZaKomentar(komentarId);
+
+        setPriloziKomentara((prethodni) => ({ ...prethodni, [komentarId]: prilozi }));
+    };
 
     useEffect(() => {
         let aktivnaKomponenta = true;
@@ -56,7 +74,10 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
             try {
                 const podaci = await dobaviKomentareZaPosao(posaoId);
 
-                if (aktivnaKomponenta) setKomentari(podaci);
+                if (aktivnaKomponenta) {
+                    setKomentari(podaci);
+                    await ucitajPrilogeKomentara(podaci);
+                }
             } catch (error: unknown) {
                 if (aktivnaKomponenta) setGreska(izvuciPorukuGreske(error, "Komentari nisu učitani."));
             } finally {
@@ -67,7 +88,7 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
         void ucitaj();
 
         return () => { aktivnaKomponenta = false; };
-    }, [posaoId]);
+    }, [posaoId, ucitajPrilogeKomentara]);
 
     const handleDodajKomentar = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -254,6 +275,14 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
                                         )}
                                     </div>
                                 )}
+
+                                <PriloziKomentara 
+                                    komentarId={komentar.id}
+                                    prilozi={priloziKomentara[komentar.id] ?? []}
+                                    mozeDodati={korisnikJeAutor}
+                                    mozeObrisati={korisnikJeAutor || korisnikJeVlasnikProjekta}
+                                    onPromjena={() => osvjeziPrilogeKomentara(komentar.id)}
+                                />
                             </article>
                         );
                     })
