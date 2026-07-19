@@ -197,7 +197,7 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
             <div className="comments-list">
                 {komentari.length === 0 ?
                 (
-                    <section className="empty-state compact empty">
+                    <section className="empty-state compact-empty">
                         <h3>Nema komentara</h3>
                         <p>Još nema komentara za ovaj posao.</p>
                     </section>

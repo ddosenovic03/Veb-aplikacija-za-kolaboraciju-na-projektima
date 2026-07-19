@@ -73,7 +73,7 @@ export const IzmjenaProjektaPage = () => {
 
     return (
         <div className="form-page">
-            <div className="page-action">
+            <div className="page-actions">
                 <div>
                     <p className="eyebrow">Izmena projekta</p>
                     <h2>Izmeni osnovne podatke</h2>

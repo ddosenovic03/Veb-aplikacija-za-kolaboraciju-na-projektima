@@ -33,6 +33,6 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
-app.listen(PORT, "127.0.0.1", () => {
-  console.log(`Server pokrenut na http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server pokrenut na portu ${PORT}`);
 });

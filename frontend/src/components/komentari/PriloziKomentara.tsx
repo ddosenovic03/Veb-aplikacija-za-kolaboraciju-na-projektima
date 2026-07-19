@@ -150,7 +150,7 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
 
             {mozeDodati && 
             (
-                <div className="attachment-forms">
+                <div className="attachments-forms">
                     <form className="inline-form" onSubmit={handleDodajLink}>
                         <Input
                             label="Link prilog"

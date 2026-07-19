@@ -41,7 +41,7 @@ export const statusGreske = (error: unknown, podrazumijevaniStatus = 400) => {
 
 export const porukaGreske = (error: unknown, podrazumijevanaPoruka = "Došlo je do greške.") => {
 
-    if (error instanceof HttpGreska) {
+    if (error instanceof Error) {
         return error.message;
     }
 
