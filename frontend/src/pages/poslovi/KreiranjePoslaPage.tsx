@@ -34,8 +34,7 @@ export const KreiranjePoslaPage = () => {
 
         try {
             const posao = await kreirajPosao(projekatId, { naziv, opis, rok });
-            console.log("Kreirani posao: ", posao);
-
+            
             navigate(`/poslovi/${posao.id}`);
         } catch (error: unknown) {
             setGreska(izvuciPorukuGreske(error, "Posao nije kreiran."));

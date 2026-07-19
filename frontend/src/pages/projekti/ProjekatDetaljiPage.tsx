@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { ClanProjekta, NapredakProjekta, PozivZaProjekat, Projekat } from "../../types/projekat";
-import type { PosaoZaListu } from "../../types/Posao";
-import { dobaviClanoveProjekta, dobaviDetaljeProjekta, dobaviNapredakProjekta, dobaviPosloveZaProjekat, dobaviPoziveZaProjekat, obrisiProjekat, pozoviKorisnikaNaProjekat } from "../../api/ProjekatApi";
+import type { PosaoZaListu } from "../../types/posao";
+import { dobaviClanoveProjekta, dobaviDetaljeProjekta, dobaviNapredakProjekta, dobaviPosloveZaProjekat, dobaviPoziveZaProjekat, obrisiProjekat, pozoviKorisnikaNaProjekat } from "../../api/projekatApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { Loading } from "../../components/common/Loading";
 import { ErrorMessage } from "../../components/common/ErrorMessage";

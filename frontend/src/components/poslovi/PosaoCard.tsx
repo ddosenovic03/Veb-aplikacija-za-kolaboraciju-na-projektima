@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { PosaoZaListu } from "../../types/Posao"
+import type { PosaoZaListu } from "../../types/posao"
 import { formatirajDatum } from "../../utils/dateFormat";
 import { dobaviKreatoraPosla, dobaviProcenatPosla, dobaviStatusPosla } from "../../utils/posaoHelper";
 import { formatirajStatus, odrediStatusVariant } from "../../utils/statusFormat";

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { kreirajProjekat } from "../../api/ProjekatApi";
+import { kreirajProjekat } from "../../api/projekatApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { ErrorMessage } from "../../components/common/ErrorMessage";
 import { Input } from "../../components/common/Input";

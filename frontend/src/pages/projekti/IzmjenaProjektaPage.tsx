@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { dobaviDetaljeProjekta, izmijeniProjekat } from "../../api/ProjekatApi";
+import { dobaviDetaljeProjekta, izmijeniProjekat } from "../../api/projekatApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { Loading } from "../../components/common/Loading";
 import { Card } from "../../components/common/Card";

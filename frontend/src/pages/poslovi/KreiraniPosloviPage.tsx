@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { PosaoZaListu } from "../../types/Posao";
+import type { PosaoZaListu } from "../../types/posao";
 import { dobaviKreiranePoslove } from "../../api/posaoApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { Loading } from "../../components/common/Loading";

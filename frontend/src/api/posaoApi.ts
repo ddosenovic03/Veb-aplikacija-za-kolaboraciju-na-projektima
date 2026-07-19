@@ -1,5 +1,5 @@
 import type { ApiResponse } from "../types/api";
-import type { AzuriranjeProcentaPoslaRequest, IzmjenaPoslaRequest, KreiranjePoslaRequest, PosaoDetalji, PosaoZaListu, PrijavaNaPosaoRequest } from "../types/Posao";
+import type { AzuriranjeProcentaPoslaRequest, IzmjenaPoslaRequest, KreiranjePoslaRequest, PosaoDetalji, PosaoZaListu, PrijavaNaPosaoRequest } from "../types/posao";
 import { apiClient } from "./apiClient";
 
 export const kreirajPosao = async (projekatId: number, podaci: KreiranjePoslaRequest) => {

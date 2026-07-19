@@ -1,4 +1,4 @@
-import type { AngazovaniKorisnik, PosaoDetalji, PosaoZaListu } from "../types/Posao";
+import type { AngazovaniKorisnik, PosaoDetalji, PosaoZaListu } from "../types/posao";
 import type { KratakKorisnik } from "../types/projekat";
 
 export const dobaviProcenatPosla = (posao: PosaoZaListu | PosaoDetalji) => {

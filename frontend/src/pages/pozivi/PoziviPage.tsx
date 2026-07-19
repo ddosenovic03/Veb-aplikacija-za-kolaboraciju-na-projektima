@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { PozivKorisnika } from "../../types/projekat";
-import { dobaviPoziveKorisnika, odbijPoziv, prihvatiPoziv } from "../../api/ProjekatApi";
+import { dobaviPoziveKorisnika, odbijPoziv, prihvatiPoziv } from "../../api/projekatApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { Loading } from "../../components/common/Loading";
 import { ErrorMessage } from "../../components/common/ErrorMessage";

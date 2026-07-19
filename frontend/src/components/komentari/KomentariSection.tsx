@@ -40,6 +40,14 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
     const [greska, setGreska] = useState<string | null>(null);
     const [uspjeh, setUspjeh] = useState<string | null>(null);
 
+    const ucitajPrilogeKomentara = useCallback(async (listaKomentara: Komentar[]) => {
+        const parovi = await Promise.all(listaKomentara.map(async (komentar) => {
+            const prilozi = await dobaviPrilogeZaKomentar(komentar.id);
+            return [komentar.id, prilozi] as const;
+        }));
+
+        setPriloziKomentara(Object.fromEntries(parovi));
+    }, []);
     const ucitajKomentare = useCallback(async () => {
         setGreska(null);
 
@@ -51,14 +59,6 @@ export const KomentariSection = ({ posaoId, projekatVlasnikId }: KomentariSectio
             setGreska(izvuciPorukuGreske(error, "Komentari nisu učitani."));
         }
     }, [posaoId]);
-    const ucitajPrilogeKomentara = useCallback(async (listaKomentara: Komentar[]) => {
-        const parovi = await Promise.all(listaKomentara.map(async (komentar) => {
-            const prilozi = await dobaviPrilogeZaKomentar(komentar.id);
-            return [komentar.id, prilozi] as const;
-        }));
-
-        setPriloziKomentara(Object.fromEntries(parovi));
-    }, []);
     const osvjeziPrilogeKomentara = async (komentarId: number) => {
         const prilozi = await dobaviPrilogeZaKomentar(komentarId);
 

@@ -1,10 +1,10 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import type { PosaoDetalji } from "../../types/Posao";
+import type { PosaoDetalji } from "../../types/posao";
 import type { Projekat } from "../../types/projekat";
 import { azurirajProcenatPosla, dobaviDetaljePosla, obrisiPosao, prijaviSeNaPosao } from "../../api/posaoApi";
-import { dobaviDetaljeProjekta } from "../../api/ProjekatApi";
+import { dobaviDetaljeProjekta } from "../../api/projekatApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { Loading } from "../../components/common/Loading";
 import { ErrorMessage } from "../../components/common/ErrorMessage";

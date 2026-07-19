@@ -1,6 +1,6 @@
 import { apiClient } from "./apiClient";
 import type { ApiResponse } from "../types/api";
-import type { PosaoZaListu } from "../types/Posao";
+import type { PosaoZaListu } from "../types/posao";
 import type { 
     Projekat,
     KreiranjeProjektaRequest,
