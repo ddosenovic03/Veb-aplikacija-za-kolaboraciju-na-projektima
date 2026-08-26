@@ -1,60 +1,83 @@
-# Veb aplikacija za kolaboraciju na projektima
+# Project Collaboration Platform
 
-Ovo je projekat urađen za diplomski rad. Aplikacija omogućava korisnicima da kreiraju projekte, pozivaju članove, kreiraju poslove, prate napredak i ostavljaju komentare i priloge.
+A full-stack web application developed as my individual bachelor's thesis in
+Software and Information Engineering.
 
-## Korištene tehnologije
+The application is designed to support collaboration on projects by allowing
+users to create projects, invite members, create and manage tasks, track task
+progress, communicate through comments, and share file or link attachments.
 
-- React i TypeScript za frontend
-- Node.js, Express i TypeScript za backend
-- MySQL baza podataka
+## Features
 
-## Potrebno za pokretanje
+- User registration and login
+- JWT-based authentication
+- Project creation and management
+- Project member invitations and invitation responses
+- Task creation and assignment
+- Individual task progress tracking
+- Project and task progress overview
+- Public and private task comments
+- File and link attachments
+- User dashboard with relevant project and task information
 
-- Node.js 20.19 ili noviji
-- MySQL 8
-- MySQL Workbench ili drugi program za rad sa MySQL bazom
+## Tech Stack
 
-## Podešavanje baze
-
-1. Pokrenuti MySQL.
-2. Otvoriti i izvršiti fajl `backend/database/schema.sql`.
-3. Za testne podatke izvršiti `backend/database/test_podaci.sql`.
-
-Napomena: `test_podaci.sql` briše prethodne podatke iz tabela i dodaje nove testne podatke.
-
-## Pokretanje backenda
-
-U folderu `backend` kopirati `.env.example` i kopiju nazvati `.env`. U `.env` treba upisati svoju MySQL lozinku.
-
-Zatim u terminalu pokrenuti:
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-Backend se pokreće na adresi `http://localhost:3000`.
-
-## Pokretanje frontenda
-
-U drugom terminalu pokrenuti:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Aplikacija se otvara na adresi `http://localhost:5173`.
-
-## Testni korisnici
-
-Svi testni korisnici imaju lozinku `Test123!`.
-
-| Email | Opis |
+| Area | Technologies |
 | --- | --- |
-| `ana.vlasnik@example.com` | Vlasnik projekta |
-| `marko.clan@example.com` | Član projekta |
-| `ivan.pozvan@example.com` | Korisnik sa pozivom na projekat |
+| Frontend | React, TypeScript, React Router, Axios |
+| Backend | Node.js, Express, TypeScript |
+| Database | MySQL |
+| Authentication | JWT, bcrypt |
+| Validation | Zod |
+| File Uploads | Multer |
+| Development | Git, npm, Vite |
 
+## Architecture
+
+The application is divided into a React frontend, an Express REST API and a
+MySQL relational database.
+
+The backend follows a layered structure:
+
+- **Routes** define API endpoints.
+- **Controllers** handle HTTP requests and responses.
+- **Services** contain application and database logic.
+- **Validators** validate incoming data.
+- **DTOs** define structured data returned by the API.
+- **Middlewares** handle authentication and application errors.
+
+The frontend separates pages, reusable components, API communication,
+authentication state, routing and shared types.
+
+## Database
+
+The relational database models users, projects, project memberships, tasks,
+task assignments, comments and attachments.
+
+![ER diagram](docs/ER%20dijagram.png)
+
+## Project Structure
+
+```text
+.
+├── backend
+│   ├── database
+│   └── src
+│       ├── config
+│       ├── controllers
+│       ├── dto
+│       ├── middlewares
+│       ├── routes
+│       ├── services
+│       ├── utils
+│       └── validators
+├── docs
+└── frontend
+    └── src
+        ├── api
+        ├── components
+        ├── context
+        ├── pages
+        ├── routes
+        ├── types
+        └── utils
