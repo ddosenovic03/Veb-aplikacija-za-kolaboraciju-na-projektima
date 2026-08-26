@@ -17,6 +17,49 @@ The application is designed to support collaboration on projects by allowing use
 - File and link attachments
 - User dashboard with relevant project and task information
 
+## Screenshots
+
+### Dashboard
+
+An at-a-glance summary of the user's projects, assigned tasks, invitations, and comments.
+
+![Application dashboard](docs/screenshots/dashboard.png)
+
+### Projects overview
+
+Projects are presented with their current status, progress, team size, and task count.
+
+![Projects overview](docs/screenshots/projects-overview.png)
+
+### Project details
+
+Members, pending invitations, tasks, and overall project progress are managed from one view.
+
+![Project details](docs/screenshots/project-details.png)
+
+### Task collaboration
+
+Assigned members can track individual progress and communicate through task comments.
+
+![Task details](docs/screenshots/task-details.png)
+
+### Authentication
+
+<table>
+  <tr>
+    <th>Login</th>
+    <th>Registration</th>
+  </tr>
+  <tr>
+    <td>Existing users can securely access their workspace.</td>
+    <td>New users can create an account from a simple registration form.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/login.png" alt="Login screen" width="420"></td>
+    <td><img src="docs/screenshots/registration.png" alt="Registration screen" width="420"></td>
+  </tr>
+</table>
+
 ## Tech Stack
 
 | Area | Technologies |
