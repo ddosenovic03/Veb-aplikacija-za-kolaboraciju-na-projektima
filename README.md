@@ -1,11 +1,8 @@
 # Project Collaboration Platform
 
-A full-stack web application developed as my individual bachelor's thesis in
-Software and Information Engineering.
+A full-stack web application developed as my individual bachelor's thesis in Software and Information Engineering.
 
-The application is designed to support collaboration on projects by allowing
-users to create projects, invite members, create and manage tasks, track task
-progress, communicate through comments, and share file or link attachments.
+The application is designed to support collaboration on projects by allowing users to create projects, invite members, create and manage tasks, track task progress, communicate through comments, and share file or link attachments.
 
 ## Features
 
@@ -13,7 +10,7 @@ progress, communicate through comments, and share file or link attachments.
 - JWT-based authentication
 - Project creation and management
 - Project member invitations and invitation responses
-- Task creation and assignment
+- Task creation and management
 - Individual task progress tracking
 - Project and task progress overview
 - Public and private task comments
@@ -34,8 +31,7 @@ progress, communicate through comments, and share file or link attachments.
 
 ## Architecture
 
-The application is divided into a React frontend, an Express REST API and a
-MySQL relational database.
+The application is divided into a React frontend, an Express REST API, and a MySQL relational database.
 
 The backend follows a layered structure:
 
@@ -46,13 +42,11 @@ The backend follows a layered structure:
 - **DTOs** define structured data returned by the API.
 - **Middlewares** handle authentication and application errors.
 
-The frontend separates pages, reusable components, API communication,
-authentication state, routing and shared types.
+The frontend separates pages, reusable components, API communication, authentication state, routing, and shared types.
 
 ## Database
 
-The relational database models users, projects, project memberships, tasks,
-task assignments, comments and attachments.
+The relational database models users, projects, project memberships, tasks, task assignments, comments, and attachments.
 
 ![ER diagram](docs/ER%20dijagram.png)
 
@@ -81,3 +75,82 @@ task assignments, comments and attachments.
         ├── routes
         ├── types
         └── utils
+```
+
+## Getting Started
+
+### Requirements
+
+- Node.js 20.19 or newer
+- MySQL 8
+- npm
+
+### Database
+
+Start MySQL and execute:
+
+```text
+backend/database/schema.sql
+```
+
+Optional test data can be loaded using:
+
+```text
+backend/database/test_podaci.sql
+```
+
+> The test data script removes existing table data before inserting the provided sample data.
+
+### Backend
+
+Inside the `backend` directory, copy `.env.example` to a new file named `.env` and configure your MySQL credentials.
+
+Then run:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+With the provided `.env.example` configuration, the backend is available at:
+
+```text
+http://localhost:3000
+```
+
+### Frontend
+
+In another terminal, run:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend is available at:
+
+```text
+http://localhost:5173
+```
+
+## Test Accounts
+
+All provided test users use the password:
+
+```text
+Test123!
+```
+
+| Email | Role |
+| --- | --- |
+| ana.vlasnik@example.com | Project owner |
+| marko.clan@example.com | Project member |
+| ivan.pozvan@example.com | Invited user |
+
+## Academic Context
+
+This project was developed individually as a bachelor's thesis project.
+
+The main goal was to design and implement a complete full-stack application, including a relational database, REST API, authentication, validation, frontend application, and file handling.
