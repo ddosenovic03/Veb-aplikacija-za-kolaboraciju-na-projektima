@@ -10,7 +10,6 @@ import { mapKomentar } from "../dto/komentarDto";
 import { HttpGreska } from "../utils/requestHelper";
 
 export const dobaviKomentarZaOdgovor = async (komentarId: number) => {
-
     const [komentari] = await db.query<RowDataPacket[]> (
         `
         SELECT
@@ -38,7 +37,6 @@ export const dobaviKomentarZaOdgovor = async (komentarId: number) => {
 };
 
 export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj: string, vidljivost: "javni" | "privatni") => {
-
     await provjeriPravoDodavanjaKomentaraNaPosao(posaoId, korisnikId);
 
     if (!sadrzaj || !sadrzaj.trim()) {
@@ -61,7 +59,6 @@ export const dodajKomentar = async (posaoId: number, korisnikId: number, sadrzaj
 };
 
 export const dobaviKomentareZaPosao = async (posaoId: number, korisnikId: number) => {  
-
     const posao = await provjeriPravoPrikazaPosla(posaoId, korisnikId);
 
     const [komentari] = await db.query<RowDataPacket[]>(
@@ -79,17 +76,28 @@ export const dobaviKomentareZaPosao = async (posaoId: number, korisnikId: number
         FROM Komentar k
         JOIN Korisnik ko ON k.korisnik_id = ko.id
         WHERE k.posao_id = ?
-        AND (k.vidljivost = 'javni' OR k.korisnik_id = ? OR ? = ?)
+        AND (
+            k.vidljivost = 'javni'
+            OR k.korisnik_id = ?
+            OR ? = ?
+            OR ? = ?
+        )
         ORDER BY k.datum_kreiranja DESC
         `,
-        [posaoId, korisnikId, korisnikId, posao?.projekat_vlasnik_id]
+        [
+            posaoId,
+            korisnikId,
+            korisnikId,
+            posao?.projekat_vlasnik_id,
+            korisnikId,
+            posao?.kreator_id
+        ]
     );
 
     return komentari.map(mapKomentar);
 };
 
 export const izmijeniKomentar = async (komentarId: number, korisnikId: number, sadrzaj?: string, vidljivost?: "javni" | "privatni") => {
-
     await provjeriPravoIzmjeneKomentara(komentarId, korisnikId);
 
     const poljaZaIzmjenu: string[] = [];
@@ -110,7 +118,7 @@ export const izmijeniKomentar = async (komentarId: number, korisnikId: number, s
         }
 
         poljaZaIzmjenu.push("vidljivost = ?");
-        vrijednosti.push(vidljivost)
+        vrijednosti.push(vidljivost);
     }
 
     if (poljaZaIzmjenu.length === 0) {
@@ -132,7 +140,6 @@ export const izmijeniKomentar = async (komentarId: number, korisnikId: number, s
 };
 
 export const obrisiKomentar = async (komentarId: number, korisnikId: number) => {
-
     const komentar = await provjeriPravoBrisanjaKomentara(komentarId, korisnikId);
 
     await db.query<ResultSetHeader> (

@@ -27,7 +27,6 @@ interface PosaoZaProvjeruPrava extends RowDataPacket {
     projekat_vlasnik_id: number;
 }
 
-
 interface AngazmanZaProvjeruPrava extends RowDataPacket {
     id: number;
     posao_id: number;
@@ -44,6 +43,7 @@ interface KomentarZaProvjeruPrava extends RowDataPacket {
     datum_kreiranja: Date;
     posao_id: number;
     autor_id: number;
+    posao_kreator_id: number;
     projekat_id: number;
     projekat_vlasnik_id: number;
 }
@@ -56,6 +56,7 @@ interface PrilogZaProvjeruPrava extends RowDataPacket {
     url_linka: string | null;
     datum_kreiranja: Date;
     posao_id: number;
+    posao_kreator_id: number;
     komentar_autor_id: number;
     komentar_vidljivost: "javni" | "privatni";
     projekat_id: number;
@@ -63,35 +64,21 @@ interface PrilogZaProvjeruPrava extends RowDataPacket {
 }
 
 const provjeriValidanId = (id: number, naziv: string) => {
-    
     if (!Number.isInteger(id) || id <= 0) {
         throw new HttpGreska(`${naziv} nije validan.`, 400);
     }
 };
 
 const istiKorisnik = (vrijednostIzBaze: unknown, korisnikId: number) => {
-
     return Number(vrijednostIzBaze) === Number(korisnikId);
 };
 
-/*
-==============================================================================
-    PROJEKTI
-==============================================================================
-*/
-
 export const dobaviProjekatZaProvjeruPrava = async (projekatId: number) => {
-
     provjeriValidanId(projekatId, "ID projekta");
 
-    const [projekti] = await db.query<ProjekatZaProvjeruPrava[]> (
+    const [projekti] = await db.query<ProjekatZaProvjeruPrava[]>(
         `
-        SELECT
-            id,
-            naziv,
-            opis,
-            datum_kreiranja,
-            vlasnik_id
+        SELECT id, naziv, opis, datum_kreiranja, vlasnik_id
         FROM Projekat
         WHERE id = ?
         `,
@@ -106,9 +93,7 @@ export const dobaviProjekatZaProvjeruPrava = async (projekatId: number) => {
 };
 
 export const provjeriVlasnikaProjekta = async (projekatId: number, korisnikId: number) => {
-
     provjeriValidanId(korisnikId, "ID korisnika");
-
     const projekat = await dobaviProjekatZaProvjeruPrava(projekatId);
 
     if (!istiKorisnik(projekat?.vlasnik_id, korisnikId)) {
@@ -119,18 +104,13 @@ export const provjeriVlasnikaProjekta = async (projekatId: number, korisnikId: n
 };
 
 export const provjeriClanstvoNaProjektu = async (projekatId: number, korisnikId: number) => {
-
     provjeriValidanId(projekatId, "ID projekta");
     provjeriValidanId(korisnikId, "ID korisnika");
-
     await dobaviProjekatZaProvjeruPrava(projekatId);
 
-    const [clanstva] = await db.query<ClanstvoZaProvjeruPrava[]> (
+    const [clanstva] = await db.query<ClanstvoZaProvjeruPrava[]>(
         `
-        SELECT
-            projekat_id,
-            korisnik_id,
-            status
+        SELECT projekat_id, korisnik_id, status
         FROM ClanstvoNaProjektu
         WHERE projekat_id = ? AND korisnik_id = ? AND status = 'prihvacen'
         `,
@@ -145,18 +125,13 @@ export const provjeriClanstvoNaProjektu = async (projekatId: number, korisnikId:
 };
 
 export const provjeriPozivNaProjekat = async (projekatId: number, korisnikId: number) => {
-
     provjeriValidanId(projekatId, "ID projekta");
     provjeriValidanId(korisnikId, "ID korisnika");
-
     await dobaviProjekatZaProvjeruPrava(projekatId);
 
-    const [pozivi] = await db.query<ClanstvoZaProvjeruPrava[]> (
+    const [pozivi] = await db.query<ClanstvoZaProvjeruPrava[]>(
         `
-        SELECT
-            projekat_id,
-            korisnik_id,
-            status
+        SELECT projekat_id, korisnik_id, status
         FROM ClanstvoNaProjektu
         WHERE projekat_id = ? AND korisnik_id = ? AND status = 'pozvan'
         `,
@@ -171,31 +146,21 @@ export const provjeriPozivNaProjekat = async (projekatId: number, korisnikId: nu
 };
 
 export const provjeriPravoPregledaProjekta = async (projekatId: number, korisnikId: number) => {
-
     return await provjeriClanstvoNaProjektu(projekatId, korisnikId);
 };
 
 export const provjeriPravoPozivanjaNaProjekat = async (projekatId: number, korisnikId: number) => {
-
     return await provjeriVlasnikaProjekta(projekatId, korisnikId); 
 };
 
 export const provjeriPravoKreiranjaPoslaUProjektu = async (projekatId: number, korisnikId: number) => {
-
     return await provjeriClanstvoNaProjektu(projekatId, korisnikId); 
 };
 
-/*
-==============================================================================
-    POSLOVI
-==============================================================================
-*/
-
 export const dobaviPosaoZaProvjeruPrava = async (posaoId: number) => {
-
     provjeriValidanId(posaoId, "ID posla");
 
-    const [poslovi] = await db.query<PosaoZaProvjeruPrava[]> (
+    const [poslovi] = await db.query<PosaoZaProvjeruPrava[]>(
         `
         SELECT
             p.id,
@@ -221,24 +186,19 @@ export const dobaviPosaoZaProvjeruPrava = async (posaoId: number) => {
 };
 
 export const provjeriPravoPrikazaPosla = async (posaoId: number, korisnikId: number) => {
-
     const posao = await dobaviPosaoZaProvjeruPrava(posaoId);
-
     await provjeriClanstvoNaProjektu(Number(posao?.projekat_id), korisnikId);
-
     return posao;
 };
 
 export const provjeriPravoPrijaveNaPosao = async (posaoId: number, korisnikId: number) => {
-
     return await provjeriPravoPrikazaPosla(posaoId, korisnikId);
 };
 
 export const provjeriPravoUpravljanjaPoslom = async (posaoId: number, korisnikId: number) => {
-
     const posao = await dobaviPosaoZaProvjeruPrava(posaoId);
-    
-    if(!istiKorisnik(posao?.kreator_id, korisnikId) && !istiKorisnik(posao?.projekat_vlasnik_id, korisnikId)) {
+
+    if (!istiKorisnik(posao?.kreator_id, korisnikId) && !istiKorisnik(posao?.projekat_vlasnik_id, korisnikId)) {
         throw new HttpGreska("Nemate pravo da upravljate ovim poslom.", 403);
     }
 
@@ -246,22 +206,19 @@ export const provjeriPravoUpravljanjaPoslom = async (posaoId: number, korisnikId
 };
 
 export const provjeriPravoIzmjenePosla = async (posaoId: number, korisnikId: number) => {
-
     return await provjeriPravoUpravljanjaPoslom(posaoId, korisnikId);
 };
 
 export const provjeriPravoBrisanjaPosla = async (posaoId: number, korisnikId: number) => {
-
     return await provjeriPravoUpravljanjaPoslom(posaoId, korisnikId);
 };
 
 export const dobaviAngazmanZaProvjeruPrava = async (posaoId: number, korisnikId: number) => {
-
     provjeriValidanId(posaoId, "ID posla");
     provjeriValidanId(korisnikId, "ID korisnika");
     await dobaviPosaoZaProvjeruPrava(posaoId);
 
-    const [angazmani] = await db.query<AngazmanZaProvjeruPrava[]> (
+    const [angazmani] = await db.query<AngazmanZaProvjeruPrava[]>(
         `
         SELECT
             a.id,
@@ -285,28 +242,18 @@ export const dobaviAngazmanZaProvjeruPrava = async (posaoId: number, korisnikId:
 };
 
 export const provjeriPravoAzuriranjaProcentaPosla = async (posaoId: number, korisnikId: number) => {
-
     return await dobaviAngazmanZaProvjeruPrava(posaoId, korisnikId);
 };
 
 export const dobaviProjekatIdZaPosao = async (posaoId: number) => {
-
     const posao = await dobaviPosaoZaProvjeruPrava(posaoId);
-
     return Number(posao?.projekat_id);
 };
 
-/*
-==============================================================================
-    KOMENTARI
-==============================================================================
-*/
-
 export const dobaviKomentarZaProvjeruPrava = async (komentarId: number) => {
-
     provjeriValidanId(komentarId, "ID komentara");
 
-    const [komentari] = await db.query<KomentarZaProvjeruPrava[]> (
+    const [komentari] = await db.query<KomentarZaProvjeruPrava[]>(
         `
         SELECT
             k.id,
@@ -315,6 +262,7 @@ export const dobaviKomentarZaProvjeruPrava = async (komentarId: number) => {
             k.datum_kreiranja,
             k.posao_id,
             k.korisnik_id AS autor_id,
+            p.kreator_id AS posao_kreator_id,
             p.projekat_id,
             pr.vlasnik_id AS projekat_vlasnik_id
         FROM Komentar k
@@ -333,19 +281,17 @@ export const dobaviKomentarZaProvjeruPrava = async (komentarId: number) => {
 };
 
 export const provjeriPravoDodavanjaKomentaraNaPosao = async (posaoId: number, korisnikId: number) => {
-
     return await provjeriPravoPrikazaPosla(posaoId, korisnikId);
 };
 
 export const provjeriPravoPrikazaKomentara = async (komentarId: number, korisnikId: number) => {
-
     const komentar = await dobaviKomentarZaProvjeruPrava(komentarId);
-
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
-    if (!(komentar?.vidljivost === "javni") 
-            && !istiKorisnik(komentar?.autor_id, korisnikId) 
-            && !istiKorisnik(komentar?.projekat_vlasnik_id, korisnikId)) {
+    if (komentar?.vidljivost !== "javni"
+        && !istiKorisnik(komentar?.autor_id, korisnikId)
+        && !istiKorisnik(komentar?.projekat_vlasnik_id, korisnikId)
+        && !istiKorisnik(komentar?.posao_kreator_id, korisnikId)) {
         throw new HttpGreska("Nemate pravo pristupa ovom komentaru.", 403);
     }
 
@@ -353,12 +299,10 @@ export const provjeriPravoPrikazaKomentara = async (komentarId: number, korisnik
 };
 
 export const provjeriPravoIzmjeneKomentara = async (komentarId: number, korisnikId: number) => {
-
     const komentar = await dobaviKomentarZaProvjeruPrava(komentarId);
-
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
-    if(!istiKorisnik(komentar?.autor_id, korisnikId)) {
+    if (!istiKorisnik(komentar?.autor_id, korisnikId)) {
         throw new HttpGreska("Samo autor komentara može izmeniti komentar.", 403);
     }
 
@@ -366,12 +310,10 @@ export const provjeriPravoIzmjeneKomentara = async (komentarId: number, korisnik
 };
 
 export const provjeriPravoBrisanjaKomentara = async (komentarId: number, korisnikId: number) => {
-
     const komentar = await dobaviKomentarZaProvjeruPrava(komentarId);
-
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
-    if(!istiKorisnik(komentar?.autor_id, korisnikId) && !istiKorisnik(komentar?.projekat_vlasnik_id, korisnikId)) {
+    if (!istiKorisnik(komentar?.autor_id, korisnikId) && !istiKorisnik(komentar?.projekat_vlasnik_id, korisnikId)) {
         throw new HttpGreska("Nemate pravo da obrišete ovaj komentar.", 403);
     }
 
@@ -379,23 +321,14 @@ export const provjeriPravoBrisanjaKomentara = async (komentarId: number, korisni
 };
 
 export const dobaviProjekatIdZaKomentar = async (komentarId: number) => {
-
     const komentar = await dobaviKomentarZaProvjeruPrava(komentarId);
-
     return Number(komentar?.projekat_id);
 };
 
-/*
-==============================================================================
-    PRILOZI
-==============================================================================
-*/
-
 export const dobaviPrilogZaProvjeruPrava = async (prilogId: number) => {
-
     provjeriValidanId(prilogId, "ID priloga");
 
-    const [prilozi] = await db.query<PrilogZaProvjeruPrava[]> (
+    const [prilozi] = await db.query<PrilogZaProvjeruPrava[]>(
         `
         SELECT
             pl.id,
@@ -405,6 +338,7 @@ export const dobaviPrilogZaProvjeruPrava = async (prilogId: number) => {
             pl.url_linka,
             pl.datum_kreiranja,
             k.posao_id,
+            p.kreator_id AS posao_kreator_id,
             k.korisnik_id AS komentar_autor_id,
             k.vidljivost AS komentar_vidljivost,
             p.projekat_id,
@@ -426,14 +360,11 @@ export const dobaviPrilogZaProvjeruPrava = async (prilogId: number) => {
 };
 
 export const provjeriPravoPrikazaPrilogaZaKomentar = async (komentarId: number, korisnikId: number) => {
-
     return await provjeriPravoPrikazaKomentara(komentarId, korisnikId);
 };
 
 export const provjeriPravoDodavanjaPrilogaNaKomentar = async (komentarId: number, korisnikId: number) => {
-
     const komentar = await dobaviKomentarZaProvjeruPrava(komentarId);
-
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
     if (!istiKorisnik(komentar?.autor_id, korisnikId)) {
@@ -444,27 +375,24 @@ export const provjeriPravoDodavanjaPrilogaNaKomentar = async (komentarId: number
 };
 
 export const provjeriPravoPrikazaPriloga = async (prilogId: number, korisnikId: number) => {
-
     const prilog = await dobaviPrilogZaProvjeruPrava(prilogId);
-
     await provjeriClanstvoNaProjektu(Number(prilog?.projekat_id), korisnikId);
 
-    if (!(prilog?.komentar_vidljivost === "javni")
+    if (prilog?.komentar_vidljivost !== "javni"
         && !istiKorisnik(prilog?.komentar_autor_id, korisnikId)
-        && !istiKorisnik(prilog?.projekat_vlasnik_id, korisnikId)) {
-            throw new HttpGreska("Nemate pravo pristupa ovom prilogu.", 403);
+        && !istiKorisnik(prilog?.projekat_vlasnik_id, korisnikId)
+        && !istiKorisnik(prilog?.posao_kreator_id, korisnikId)) {
+        throw new HttpGreska("Nemate pravo pristupa ovom prilogu.", 403);
     }
 
     return prilog;
 };
 
 export const provjeriPravoBrisanjaPriloga = async (prilogId: number, korisnikId: number) => {
-
     const prilog = await dobaviPrilogZaProvjeruPrava(prilogId);
-
     await provjeriClanstvoNaProjektu(Number(prilog?.projekat_id), korisnikId);
 
-    if(!istiKorisnik(prilog?.komentar_autor_id, korisnikId) && !istiKorisnik(prilog?.projekat_vlasnik_id, korisnikId)) {
+    if (!istiKorisnik(prilog?.komentar_autor_id, korisnikId) && !istiKorisnik(prilog?.projekat_vlasnik_id, korisnikId)) {
         throw new HttpGreska("Nemate pravo da obrišete ovaj prilog.", 403);
     }
 

@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import type { Prilog } from "../../types/prilog";
-import { dodajFajlPrilog, dodajLinkPrilog, obrisiPrilog } from "../../api/prilogApi";
+import { dobaviFajlPriloga, dodajFajlPrilog, dodajLinkPrilog, obrisiPrilog } from "../../api/prilogApi";
 import { izvuciPorukuGreske } from "../../utils/errorHelper";
 import { ErrorMessage } from "../common/ErrorMessage";
-import { napraviUrlFajla } from "../../utils/urlHelper";
 import { formatirajDatum } from "../../utils/dateFormat";
 import { Button } from "../common/Button";
 import { Input } from "../common/Input";
@@ -17,7 +16,6 @@ type PriloziKomentaraProps = {
 };
 
 export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati, onPromjena }: PriloziKomentaraProps) => {
-
     const [url, setUrl] = useState("");
     const [fajl, setFajl] = useState<File | null>(null);
     const [ucitavanje, setUcitavanje] = useState(false);
@@ -25,13 +23,11 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
 
     const handleDodajLink = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
         setGreska(null);
         setUcitavanje(true);
 
         try {
             await dodajLinkPrilog(komentarId, { tip: "link", url });
-
             setUrl("");
             await onPromjena();
         } catch (error: unknown) {
@@ -40,9 +36,9 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
             setUcitavanje(false);
         }
     };
+
     const handleDodajFajl = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
         const form = event.currentTarget;
 
         if (!fajl) {
@@ -55,10 +51,8 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
 
         try {
             await dodajFajlPrilog(komentarId, fajl);
-
             setFajl(null);
             form.reset();
-
             await onPromjena();
         } catch (error: unknown) {
             setGreska(izvuciPorukuGreske(error, "Fajl prilog nije dodat."));
@@ -66,6 +60,26 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
             setUcitavanje(false);
         }
     };
+
+    const handleOtvoriFajl = async (prilogId: number) => {
+        setGreska(null);
+
+        try {
+            const blob = await dobaviFajlPriloga(prilogId);
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.target = "_blank";
+            link.rel = "noreferrer";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        } catch (error: unknown) {
+            setGreska(izvuciPorukuGreske(error, "Fajl nije moguće otvoriti."));
+        }
+    };
+
     const handleObrisiPrilog = async (prilogId: number) => {
         const potvrda = window.confirm("Da li ste sigurni da želite da obrišete prilog?");
         if (!potvrda) return;
@@ -105,40 +119,40 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
                         return (
                             <article className="attachment-card" key={prilog.id}>
                                 <div className="attachment-main">
-                                    {jeLink && 
+                                    {jeLink &&
                                     (
                                         <>
                                         <span className="attachment-type">Link</span>
-                                        {prilog.je_youtube && prilog.youtube_video_id ? 
+                                        {prilog.je_youtube && prilog.youtube_video_id ?
                                         (
                                             <div className="youtube-preview">
-                                                <iframe 
+                                                <iframe
                                                     title={`Youtube prilog ${prilog.id}`}
                                                     src={`https://www.youtube-nocookie.com/embed/${prilog.youtube_video_id}`}
                                                     allowFullScreen
                                                 />
                                             </div>
-                                        ) : 
+                                        ) :
                                         (
                                             <a href={prilog.url_linka ?? "#"} target="_blank" rel="noreferrer">Otvori link</a>
                                         )}
                                         </>
                                     )}
-                                    {jeFajl && 
+                                    {jeFajl &&
                                     (
                                         <>
                                         <span className="attachment-type">Fajl</span>
-                                        <a href={napraviUrlFajla(prilog.putanja_fajla)} target="_blank" rel="noreferrer">Otvori fajl</a>
+                                        <Button variant="secondary" onClick={() => void handleOtvoriFajl(prilog.id)}>Otvori fajl</Button>
                                         </>
                                     )}
 
-                                    {prilog.datum_kreiranja && 
+                                    {prilog.datum_kreiranja &&
                                     (
                                         <p className="muted-text small-text">Dodato: {formatirajDatum(prilog.datum_kreiranja)}</p>
                                     )}
                                 </div>
 
-                                {mozeObrisati && 
+                                {mozeObrisati &&
                                 (
                                     <Button variant="danger" onClick={() => void handleObrisiPrilog(prilog.id)} isLoading={ucitavanje}>Obriši</Button>
                                 )}
@@ -148,7 +162,7 @@ export const PriloziKomentara = ({ komentarId, prilozi, mozeDodati, mozeObrisati
                 </div>
             )}
 
-            {mozeDodati && 
+            {mozeDodati &&
             (
                 <div className="attachments-forms">
                     <form className="inline-form" onSubmit={handleDodajLink}>
