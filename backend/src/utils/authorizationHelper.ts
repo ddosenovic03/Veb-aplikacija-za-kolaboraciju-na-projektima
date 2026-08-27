@@ -1,5 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import { db } from "../config/dbConfig";
+import { HttpGreska } from "./requestHelper";
 
 interface ProjekatZaProvjeruPrava extends RowDataPacket {
     id: number;
@@ -64,7 +65,7 @@ interface PrilogZaProvjeruPrava extends RowDataPacket {
 const provjeriValidanId = (id: number, naziv: string) => {
     
     if (!Number.isInteger(id) || id <= 0) {
-        throw new Error(`${naziv} nije validan.`);
+        throw new HttpGreska(`${naziv} nije validan.`, 400);
     }
 };
 
@@ -98,7 +99,7 @@ export const dobaviProjekatZaProvjeruPrava = async (projekatId: number) => {
     );
 
     if (projekti.length === 0) {
-        throw new Error("Projekat ne postoji.");
+        throw new HttpGreska("Projekat ne postoji.", 404);
     }
 
     return projekti[0];
@@ -111,7 +112,7 @@ export const provjeriVlasnikaProjekta = async (projekatId: number, korisnikId: n
     const projekat = await dobaviProjekatZaProvjeruPrava(projekatId);
 
     if (!istiKorisnik(projekat?.vlasnik_id, korisnikId)) {
-        throw new Error("Nemate pravo da upravljate ovim projektom.");
+        throw new HttpGreska("Nemate pravo da upravljate ovim projektom.", 403);
     }
 
     return projekat;
@@ -137,7 +138,7 @@ export const provjeriClanstvoNaProjektu = async (projekatId: number, korisnikId:
     );
 
     if (clanstva.length === 0) {
-        throw new Error("Nemate pravo pristupa ovom projektu.");
+        throw new HttpGreska("Nemate pravo pristupa ovom projektu.", 403);
     }
 
     return clanstva[0];
@@ -163,7 +164,7 @@ export const provjeriPozivNaProjekat = async (projekatId: number, korisnikId: nu
     );
 
     if (pozivi.length === 0) {
-        throw new Error("Nemate aktivan poziv za ovaj projekat.");
+        throw new HttpGreska("Nemate aktivan poziv za ovaj projekat.", 403);
     }
 
     return pozivi[0];
@@ -213,7 +214,7 @@ export const dobaviPosaoZaProvjeruPrava = async (posaoId: number) => {
     );
 
     if (poslovi.length === 0) {
-        throw new Error("Posao ne postoji.");
+        throw new HttpGreska("Posao ne postoji.", 404);
     }
 
     return poslovi[0];
@@ -238,7 +239,7 @@ export const provjeriPravoUpravljanjaPoslom = async (posaoId: number, korisnikId
     const posao = await dobaviPosaoZaProvjeruPrava(posaoId);
     
     if(!istiKorisnik(posao?.kreator_id, korisnikId) && !istiKorisnik(posao?.projekat_vlasnik_id, korisnikId)) {
-        throw new Error("Nemate pravo da upravljate ovim poslom.");
+        throw new HttpGreska("Nemate pravo da upravljate ovim poslom.", 403);
     }
 
     return posao;
@@ -258,6 +259,7 @@ export const dobaviAngazmanZaProvjeruPrava = async (posaoId: number, korisnikId:
 
     provjeriValidanId(posaoId, "ID posla");
     provjeriValidanId(korisnikId, "ID korisnika");
+    await dobaviPosaoZaProvjeruPrava(posaoId);
 
     const [angazmani] = await db.query<AngazmanZaProvjeruPrava[]> (
         `
@@ -276,7 +278,7 @@ export const dobaviAngazmanZaProvjeruPrava = async (posaoId: number, korisnikId:
     );
 
     if (angazmani.length === 0) {
-        throw new Error("Niste angažovani na ovom poslu.");
+        throw new HttpGreska("Niste angažovani na ovom poslu.", 403);
     }
 
     return angazmani[0];
@@ -324,7 +326,7 @@ export const dobaviKomentarZaProvjeruPrava = async (komentarId: number) => {
     );
 
     if (komentari.length === 0) {
-        throw new Error("Komentar ne postoji.");
+        throw new HttpGreska("Komentar ne postoji.", 404);
     }
 
     return komentari[0];
@@ -344,7 +346,7 @@ export const provjeriPravoPrikazaKomentara = async (komentarId: number, korisnik
     if (!(komentar?.vidljivost === "javni") 
             && !istiKorisnik(komentar?.autor_id, korisnikId) 
             && !istiKorisnik(komentar?.projekat_vlasnik_id, korisnikId)) {
-        throw new Error("Nemate pravo pristupa ovom komentaru.");
+        throw new HttpGreska("Nemate pravo pristupa ovom komentaru.", 403);
     }
 
     return komentar;
@@ -357,7 +359,7 @@ export const provjeriPravoIzmjeneKomentara = async (komentarId: number, korisnik
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
     if(!istiKorisnik(komentar?.autor_id, korisnikId)) {
-        throw new Error("Samo autor komentara može izmeniti komentar.");
+        throw new HttpGreska("Samo autor komentara može izmeniti komentar.", 403);
     }
 
     return komentar;
@@ -370,7 +372,7 @@ export const provjeriPravoBrisanjaKomentara = async (komentarId: number, korisni
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
     if(!istiKorisnik(komentar?.autor_id, korisnikId) && !istiKorisnik(komentar?.projekat_vlasnik_id, korisnikId)) {
-        throw new Error("Nemate pravo da obrišete ovaj komentar.");
+        throw new HttpGreska("Nemate pravo da obrišete ovaj komentar.", 403);
     }
 
     return komentar;
@@ -417,7 +419,7 @@ export const dobaviPrilogZaProvjeruPrava = async (prilogId: number) => {
     );
 
     if (prilozi.length === 0) {
-        throw new Error("Prilog ne postoji.");
+        throw new HttpGreska("Prilog ne postoji.", 404);
     }
 
     return prilozi[0];
@@ -435,7 +437,7 @@ export const provjeriPravoDodavanjaPrilogaNaKomentar = async (komentarId: number
     await provjeriClanstvoNaProjektu(Number(komentar?.projekat_id), korisnikId);
 
     if (!istiKorisnik(komentar?.autor_id, korisnikId)) {
-        throw new Error("Samo autor komentara može dodati prilog na komentar.");
+        throw new HttpGreska("Samo autor komentara može dodati prilog na komentar.", 403);
     }
 
     return komentar;
@@ -450,7 +452,7 @@ export const provjeriPravoPrikazaPriloga = async (prilogId: number, korisnikId: 
     if (!(prilog?.komentar_vidljivost === "javni")
         && !istiKorisnik(prilog?.komentar_autor_id, korisnikId)
         && !istiKorisnik(prilog?.projekat_vlasnik_id, korisnikId)) {
-            throw new Error("Nemate pravo pristupa ovom prilogu.");
+            throw new HttpGreska("Nemate pravo pristupa ovom prilogu.", 403);
     }
 
     return prilog;
@@ -463,7 +465,7 @@ export const provjeriPravoBrisanjaPriloga = async (prilogId: number, korisnikId:
     await provjeriClanstvoNaProjektu(Number(prilog?.projekat_id), korisnikId);
 
     if(!istiKorisnik(prilog?.komentar_autor_id, korisnikId) && !istiKorisnik(prilog?.projekat_vlasnik_id, korisnikId)) {
-        throw new Error("Nemate pravo da obrišete ovaj prilog.");
+        throw new HttpGreska("Nemate pravo da obrišete ovaj prilog.", 403);
     }
 
     return prilog;

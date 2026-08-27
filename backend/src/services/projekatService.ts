@@ -9,6 +9,7 @@ import {
 } from "../utils/authorizationHelper";
 import { mapProjekat, mapPozivZaProjekat, mapNapredakProjekta } from "../dto/projekatDto";
 import { mapPosaoZaListu } from "../dto/posaoDto";
+import { HttpGreska } from "../utils/requestHelper";
 
 type KreiranjeProjektaPodaci = {
     naziv: string;
@@ -292,7 +293,7 @@ export const dobaviDetaljeProjekta = async (projekatId: number, korisnikId: numb
     );
 
     if (projekti.length === 0) {
-        throw new Error("Projekat nije pronađen.");
+        throw new HttpGreska("Projekat nije pronađen.", 404);
     }
 
     return mapProjekat(projekti[0]);

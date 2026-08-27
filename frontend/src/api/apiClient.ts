@@ -21,6 +21,10 @@ apiClient.interceptors.response.use((response) => response, (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         localStorage.removeItem(KORISNIK_STORAGE_KEY);
+
+        if (window.location.pathname !== "/login") {
+            window.location.assign("/login");
+        }
     }
 
     return Promise.reject(error);

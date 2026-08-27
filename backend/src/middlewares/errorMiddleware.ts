@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import { greskaOdgovor } from "../utils/apiResponseHelper";
+import { statusGreske } from "../utils/requestHelper";
 
 export const notFoundHandler = (req: Request, res: Response, _next: NextFunction) => {
 
@@ -20,7 +21,7 @@ export const globalErrorHandler = (error: unknown, _req: Request, res: Response,
     }
 
     if (error instanceof Error) {
-        return greskaOdgovor(res, error.message, 400);
+        return greskaOdgovor(res, error.message, statusGreske(error));
     }
 
     return greskaOdgovor(res, "Došlo je do neočekivane greške.", 500);

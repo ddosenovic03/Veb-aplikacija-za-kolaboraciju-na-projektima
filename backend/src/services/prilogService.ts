@@ -8,6 +8,7 @@ import {
 import { mapPrilog } from "../dto/prilogDto";
 import fs from "fs/promises";
 import path from "path";
+import { HttpGreska } from "../utils/requestHelper";
 
 const dobaviPrilogZaOdgovor = async (prilogId: number) => {
 
@@ -27,7 +28,7 @@ const dobaviPrilogZaOdgovor = async (prilogId: number) => {
     );
 
     if (prilozi.length === 0) {
-        throw new Error("Prilog ne postoji.");
+        throw new HttpGreska("Prilog ne postoji.", 404);
     }
 
     return mapPrilog(prilozi[0]);

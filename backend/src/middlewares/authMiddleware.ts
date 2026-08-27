@@ -29,7 +29,12 @@ export const autentifikacija = (req: Request, res: Response, next: NextFunction)
         }   
 
         const dekodiran = jwt.verify(token, JWT_SECRET);
-        if (typeof dekodiran === "string") {
+        if (typeof dekodiran === "string"
+            || typeof dekodiran.id !== "number"
+            || !Number.isInteger(dekodiran.id)
+            || dekodiran.id <= 0
+            || typeof dekodiran.email !== "string"
+            || !dekodiran.email.trim()) {
             return res.status(401).json({ poruka: "Neispravan token!" });
         }
         const dekodiranJwt = dekodiran as JwtPayload;

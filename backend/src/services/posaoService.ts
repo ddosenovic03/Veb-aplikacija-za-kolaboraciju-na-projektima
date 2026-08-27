@@ -9,6 +9,7 @@ import {
     provjeriPravoBrisanjaPosla
 } from "../utils/authorizationHelper";
 import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
+import { HttpGreska } from "../utils/requestHelper";
 
 const dobaviPosaoZaListu = async (posaoId: number) => {
 
@@ -45,7 +46,7 @@ const dobaviPosaoZaListu = async (posaoId: number) => {
     );
 
     if (poslovi.length === 0) {
-        throw new Error("Posao nije pronađen.");
+        throw new HttpGreska("Posao nije pronađen.", 404);
     }
 
     return mapPosaoZaListu(poslovi[0]);
@@ -190,7 +191,7 @@ export const dobaviDetaljePosla = async (posaoId: number, korisnikId: number) =>
     );
 
     if (poslovi.length === 0) {
-        throw new Error("Posao nije pronađen.");
+        throw new HttpGreska("Posao nije pronađen.", 404);
     }
 
     const [angazovani] = await db.query<RowDataPacket[]>(

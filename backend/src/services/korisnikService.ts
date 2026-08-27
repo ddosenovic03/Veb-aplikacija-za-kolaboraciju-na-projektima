@@ -3,6 +3,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/envConfig";
+import { HttpGreska } from "../utils/requestHelper";
 
 type RegistracijaPodaci = {
   ime: string;
@@ -56,13 +57,13 @@ export const prijaviKorisnika = async (email: string, lozinka: string) => {
     const korisnik = korisnici[0];
 
     if (!korisnik) {
-        throw new Error("Neispravan email ili lozinka");
+        throw new HttpGreska("Neispravan email ili lozinka", 401);
     }
 
     const validnaLozinka = await bcrypt.compare(lozinka, korisnik.lozinka_hash);
     
     if (!validnaLozinka) {
-        throw new Error("Neispravan email ili lozinka");
+        throw new HttpGreska("Neispravan email ili lozinka", 401);
     }
 
     const token = jwt.sign(

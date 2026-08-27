@@ -7,6 +7,7 @@ import {
     provjeriPravoBrisanjaKomentara
 } from "../utils/authorizationHelper";
 import { mapKomentar } from "../dto/komentarDto";
+import { HttpGreska } from "../utils/requestHelper";
 
 export const dobaviKomentarZaOdgovor = async (komentarId: number) => {
 
@@ -30,7 +31,7 @@ export const dobaviKomentarZaOdgovor = async (komentarId: number) => {
     );
 
     if (komentari.length === 0) {
-        throw new Error("Komentar ne postoji.");
+        throw new HttpGreska("Komentar ne postoji.", 404);
     }
 
     return mapKomentar(komentari[0]);

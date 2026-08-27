@@ -146,7 +146,7 @@ backend/database/test_podaci.sql
 
 ### Backend
 
-Inside the `backend` directory, copy `.env.example` to a new file named `.env` and configure your MySQL credentials.
+Inside the `backend` directory, copy `.env.example` to a new file named `.env`, configure your MySQL credentials, and replace the `JWT_SECRET` placeholder with your own random secret of at least 32 characters.
 
 Then run:
 
