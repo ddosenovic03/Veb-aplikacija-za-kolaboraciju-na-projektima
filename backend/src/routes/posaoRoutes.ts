@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { autentifikacija } from "../middlewares/authMiddleware";
+import { cleanupFajlovaPosla } from "../middlewares/fileCleanupMiddleware";
 import { 
     prijavaNaPosaoController, 
     azuriranjeProcentaPoslaController, 
@@ -19,6 +20,6 @@ router.post("/:posaoId/prijava", autentifikacija, prijavaNaPosaoController);
 router.patch("/:posaoId/procenat", autentifikacija, azuriranjeProcentaPoslaController);
 router.get("/:posaoId", autentifikacija, dobavljanjeDetaljaPoslaController);
 router.patch("/:posaoId", autentifikacija, izmjenaPoslaController);
-router.delete("/:posaoId", autentifikacija, brisanjePoslaController);
+router.delete("/:posaoId", autentifikacija, cleanupFajlovaPosla, brisanjePoslaController);
 
 export default router;

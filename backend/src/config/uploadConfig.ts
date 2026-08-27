@@ -2,10 +2,11 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import { HttpGreska } from "../utils/requestHelper";
 
 const folderZaPriloge = path.join(process.cwd(), "uploads", "prilozi");
 
-if (!fs.existsSync(folderZaPriloge)) { 
+if (!fs.existsSync(folderZaPriloge)) {
     fs.mkdirSync(folderZaPriloge, { recursive: true });
 }
 
@@ -22,14 +23,14 @@ const ekstenzijePoTipu: Record<string, string> = {
 const dozvoljeniTipovi = Object.keys(ekstenzijePoTipu);
 
 const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => { 
+    destination: (_req, _file, cb) => {
         cb(null, folderZaPriloge);
     },
     filename: (_req, file, cb) => {
         const ekstenzija = ekstenzijePoTipu[file.mimetype];
 
         if (!ekstenzija) {
-            return cb(new Error("Tip fajla nije dozvoljen."), "");
+            return cb(new HttpGreska("Tip fajla nije dozvoljen.", 400), "");
         }
 
         const nazivFajla = `${Date.now()}-${crypto.randomUUID()}${ekstenzija}`;
@@ -44,7 +45,7 @@ export const uploadPriloga = multer({
     },
     fileFilter: (_req, file, cb) => {
         if (!dozvoljeniTipovi.includes(file.mimetype)) {
-            return cb(new Error("Tip fajla nije dozvoljen."));
+            return cb(new HttpGreska("Tip fajla nije dozvoljen.", 400));
         }
 
         cb(null, true);

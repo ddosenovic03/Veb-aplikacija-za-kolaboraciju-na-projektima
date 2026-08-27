@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { autentifikacija } from '../middlewares/authMiddleware';
+import { cleanupFajlovaProjekta } from '../middlewares/fileCleanupMiddleware';
 import { 
     kreiranjeProjektaController,
     pozivanjeKorisnikaNaProjekatController,
@@ -33,6 +34,6 @@ router.get("/:projekatId/clanovi", autentifikacija, dobavljanjeClanovaProjektaCo
 router.get("/:projekatId/pozivi", autentifikacija, dobavljanjePozvanihKorisnikaNaProjekatController);
 router.get("/:projekatId/napredak", autentifikacija, dobavljanjeNapretkaProjektaController);
 router.patch("/:projekatId", autentifikacija, izmjenaProjektaController);
-router.delete("/:projekatId", autentifikacija, brisanjeProjektaController);
+router.delete("/:projekatId", autentifikacija, cleanupFajlovaProjekta, brisanjeProjektaController);
 
 export default router;

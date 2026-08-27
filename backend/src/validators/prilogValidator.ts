@@ -1,9 +1,19 @@
 import { z } from "zod";
 import { obavezanUrl } from "../utils/validationHelper";
 
+const httpIliHttpsUrl = obavezanUrl("URL priloga je obavezan.", "URL priloga nije validan.")
+    .refine((vrijednost) => {
+        try {
+            const url = new URL(vrijednost);
+            return url.protocol === "http:" || url.protocol === "https:";
+        } catch {
+            return false;
+        }
+    }, { message: "URL priloga mora koristiti http ili https protokol." });
+
 export const dodavanjePrilogaSchema = z.object({
     tip: z.enum(["link"], { message: "Trenutno je podržano samo dodavanje link priloga." }),
-    url: obavezanUrl("URL priloga je obavezan.", "URL priloga nije validan.")
+    url: httpIliHttpsUrl
 });
 
 const dozvoljeniTipoviFajlova = [

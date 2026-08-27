@@ -5,7 +5,6 @@ export type Prilog = {
     komentar_id: number;
     tip: TipPriloga;
 
-    putanja_fajla?: string | null;
     url_linka?: string | null;
 
     datum_kreiranja?: string;
