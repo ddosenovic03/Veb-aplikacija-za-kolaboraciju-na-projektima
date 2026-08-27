@@ -67,6 +67,10 @@ export const dobaviPrilogeZaKomentar = async (komentarId: number, korisnikId: nu
 export const dobaviFajlPriloga = async (prilogId: number, korisnikId: number) => {
     const prilog = await provjeriPravoPrikazaPriloga(prilogId, korisnikId);
 
+    if (!prilog) {
+        throw new HttpGreska("Prilog ne postoji.", 404);
+    }
+
     if (prilog.tip !== "fajl" || !prilog.putanja_fajla) {
         throw new HttpGreska("Fajl prilog ne postoji.", 404);
     }
