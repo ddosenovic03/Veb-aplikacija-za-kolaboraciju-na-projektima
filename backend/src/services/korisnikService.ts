@@ -22,6 +22,17 @@ interface KorisnikRed extends RowDataPacket {
     lozinka_hash: string;
 }
 
+const jeDuplicateEntryGreska = (error: unknown) => {
+
+    if (typeof error !== "object" || error === null) {
+        return false;
+    }
+
+    const mysqlGreska = error as { code?: unknown, errno?: unknown };
+
+    return mysqlGreska.code === "ER_DUP_ENTRY" || mysqlGreska.errno === 1062;
+};
+
 export const registrujKorisnika = async (podaci: RegistracijaPodaci) => {
   
     const { ime, prezime, korisnicko_ime, email, lozinka } = podaci;
@@ -31,18 +42,27 @@ export const registrujKorisnika = async (podaci: RegistracijaPodaci) => {
     }
 
     const lozinkaHash = await bcrypt.hash(lozinka, 10);
-    const [rezultat] = await db.query<ResultSetHeader>(
-        "INSERT INTO Korisnik (ime, prezime, korisnicko_ime, email, lozinka_hash) VALUES (?, ?, ?, ?, ?)",
-        [ime.trim(), prezime.trim(), korisnicko_ime.trim(), email.trim(), lozinkaHash]
-    );
 
-    return { 
-        id: rezultat.insertId,
-        ime: ime.trim(),
-        prezime: prezime.trim(),
-        korisnicko_ime: korisnicko_ime.trim(),
-        email: email.trim()
-    };
+    try {
+        const [rezultat] = await db.query<ResultSetHeader>(
+            "INSERT INTO Korisnik (ime, prezime, korisnicko_ime, email, lozinka_hash) VALUES (?, ?, ?, ?, ?)",
+            [ime.trim(), prezime.trim(), korisnicko_ime.trim(), email.trim(), lozinkaHash]
+        );
+
+        return {
+            id: rezultat.insertId,
+            ime: ime.trim(),
+            prezime: prezime.trim(),
+            korisnicko_ime: korisnicko_ime.trim(),
+            email: email.trim()
+        };
+    } catch (error: unknown) {
+        if (jeDuplicateEntryGreska(error)) {
+            throw new HttpGreska("Email ili korisničko ime već postoji.", 409);
+        }
+
+        throw error;
+    }
 
 };
 

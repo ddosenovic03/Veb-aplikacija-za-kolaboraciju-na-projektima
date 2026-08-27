@@ -33,6 +33,8 @@ export const prijavaNaPosaoSchema = z.object(
 
 export const azuriranjeProcentaPoslaSchema = z.object(
     {
-        procenat: obavezanBroj("Procenat je obavezan.").min(0, "Procenat ne može biti manji od 0.").max(100, "Procenat ne može biti veći od 100.")
+        procenat: obavezanBroj("Procenat je obavezan.").pipe(
+            z.number().min(0, "Procenat ne može biti manji od 0.").max(100, "Procenat ne može biti veći od 100.")
+        )
     }
 );
