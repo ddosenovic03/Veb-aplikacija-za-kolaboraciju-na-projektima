@@ -11,6 +11,17 @@ import {
 import { mapPosaoZaListu, mapDetaljiPosla } from "../dto/posaoDto";
 import { HttpGreska } from "../utils/requestHelper";
 
+const jeDuplicateEntryGreska = (error: unknown) => {
+
+    if (typeof error !== "object" || error === null) {
+        return false;
+    }
+
+    const mysqlGreska = error as { code?: unknown, errno?: unknown };
+
+    return mysqlGreska.code === "ER_DUP_ENTRY" || mysqlGreska.errno === 1062;
+};
+
 const dobaviPosaoZaListu = async (posaoId: number) => {
 
     const [poslovi] = await db.query<RowDataPacket[]> (
@@ -109,24 +120,32 @@ export const prijaviSeNaPosao = async (posaoId: number, korisnikId: number, pred
     );
 
     if (postojeciAngazmani.length > 0) {
-        throw new Error("Korisnik je već prijavljen na ovaj posao.");
+        throw new HttpGreska("Korisnik je već prijavljen na ovaj posao.", 409);
     }
 
-    const [rezultat] = await db.query<ResultSetHeader>(
-        `
-        INSERT INTO AngazmanNaPoslu (korisnik_id, posao_id, predlozeni_rok, procenat)
-        VALUES (?, ?, ?, 0)
-        `,
-        [korisnikId, posaoId, predlozeniRok || null]
-    );
+    try {
+        const [rezultat] = await db.query<ResultSetHeader>(
+            `
+            INSERT INTO AngazmanNaPoslu (korisnik_id, posao_id, predlozeni_rok, procenat)
+            VALUES (?, ?, ?, 0)
+            `,
+            [korisnikId, posaoId, predlozeniRok || null]
+        );
 
-    return {
-        id: rezultat.insertId,
-        korisnik_id: korisnikId,
-        posao_id: posaoId,
-        predlozeni_rok: predlozeniRok || null,
-        procenat: 0
-    };
+        return {
+            id: rezultat.insertId,
+            korisnik_id: korisnikId,
+            posao_id: posaoId,
+            predlozeni_rok: predlozeniRok || null,
+            procenat: 0
+        };
+    } catch (error: unknown) {
+        if (jeDuplicateEntryGreska(error)) {
+            throw new HttpGreska("Korisnik je već prijavljen na ovaj posao.", 409);
+        }
+
+        throw error;
+    }
 };
 
 export const azurirajProcenatPosla = async (posaoId: number, korisnikId: number, procenat: number) => {
@@ -309,7 +328,7 @@ export const izmijeniPosao = async (posaoId: number, korisnikId: number, naziv?:
 
     if (opis !== undefined) {
         poljaZaIzmjenu.push("opis = ?");
-        vrijednosti.push(opis);
+        vrijednosti.push(opis.trim() || null);
     }
 
     if (rok !== undefined) {

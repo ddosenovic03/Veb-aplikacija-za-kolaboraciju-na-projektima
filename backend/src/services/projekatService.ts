@@ -17,6 +17,17 @@ type KreiranjeProjektaPodaci = {
     vlasnik_id : number;  
 };
 
+const jeDuplicateEntryGreska = (error: unknown) => {
+
+    if (typeof error !== "object" || error === null) {
+        return false;
+    }
+
+    const mysqlGreska = error as { code?: unknown, errno?: unknown };
+
+    return mysqlGreska.code === "ER_DUP_ENTRY" || mysqlGreska.errno === 1062;
+};
+
 const dobaviPozivZaOdgovor = async (projekatId: number, pozvaniKorisnikId: number) => {
 
     const [pozivi] = await db.query<RowDataPacket[]> (
@@ -114,7 +125,7 @@ export const pozoviKorisnikaNaProjekat = async (projekatId: number, korisnikId: 
     const pozvaniKorisnik = korisnici[0];
 
     if (!pozvaniKorisnik) {
-        throw new Error("Korisnik sa datim emailom nije pronađen.");
+        throw new HttpGreska("Korisnik sa datim emailom nije pronađen.", 404);
     }
 
     const [postojecaClanstva] = await db.query<RowDataPacket[]>(
@@ -128,23 +139,31 @@ export const pozoviKorisnikaNaProjekat = async (projekatId: number, korisnikId: 
 
     if (postojeceClanstvo) {
         if (postojeceClanstvo.status === "prihvacen") {
-            throw new Error("Korisnik je već član ovog projekta.");
+            throw new HttpGreska("Korisnik je već član ovog projekta.", 409);
         }
 
         if (postojeceClanstvo.status === "pozvan") {
-            throw new Error("Korisnik je već pozvan na ovaj projekat.");
+            throw new HttpGreska("Korisnik je već pozvan na ovaj projekat.", 409);
         }
 
-        throw new Error("Korisnik je već imao poziv za ovaj projekat.");
+        throw new HttpGreska("Korisnik je već imao poziv za ovaj projekat.", 409);
     }
 
-    await db.query<ResultSetHeader> (
-        `
-        INSERT INTO ClanstvoNaProjektu (korisnik_id, projekat_id, status)
-        VALUES (?, ?, 'pozvan')
-        `,
-        [pozvaniKorisnik.id, projekatId]
-    );
+    try {
+        await db.query<ResultSetHeader> (
+            `
+            INSERT INTO ClanstvoNaProjektu (korisnik_id, projekat_id, status)
+            VALUES (?, ?, 'pozvan')
+            `,
+            [pozvaniKorisnik.id, projekatId]
+        );
+    } catch (error: unknown) {
+        if (jeDuplicateEntryGreska(error)) {
+            throw new HttpGreska("Korisnik već ima članstvo ili poziv za ovaj projekat.", 409);
+        }
+
+        throw error;
+    }
 
     return await dobaviPozivZaOdgovor(projekatId, pozvaniKorisnik.id);
 };
@@ -389,10 +408,10 @@ export const dobaviNapredakProjekta = async (projekatId: number, korisnikId: num
         `
         SELECT
             COALESCE(ROUND(AVG(poslovi_procenat.procenat_posla), 2), 0) AS procenat_projekta,
-            SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) = 0 THEN 1 ELSE 0 END) AS broj_nezapocetih,
-            SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) > 0 
-                AND COALESCE(poslovi_procenat.procenat_posla, 0) < 100 THEN 1 ELSE 0 END) AS broj_u_toku,
-            SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) = 100 THEN 1 ELSE 0 END) AS broj_zavrsenih,
+            COALESCE(SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) = 0 THEN 1 ELSE 0 END), 0) AS broj_nezapocetih,
+            COALESCE(SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) > 0
+                AND COALESCE(poslovi_procenat.procenat_posla, 0) < 100 THEN 1 ELSE 0 END), 0) AS broj_u_toku,
+            COALESCE(SUM(CASE WHEN COALESCE(poslovi_procenat.procenat_posla, 0) = 100 THEN 1 ELSE 0 END), 0) AS broj_zavrsenih,
             COUNT(p.id) AS ukupan_broj_poslova
         FROM Posao p
         LEFT JOIN (
